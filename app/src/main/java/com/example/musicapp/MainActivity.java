@@ -19,19 +19,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     SeekBar seekBarTime;
     Button btnPlay;
     MediaPlayer musicPLayer;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_main);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
 
-    private void bindingView(){
         tvTime = findViewById(R.id.tvTime);
         tvDuration = findViewById(R.id.tvDuration);
         seekBarTime = findViewById(R.id.seekBarTime);
         btnPlay = findViewById(R.id.btnPlay);
-    }
 
-    private void bindingAction(){
+        musicPLayer = MediaPlayer.create(this,R.raw.test);
+        musicPLayer.setLooping(true);
+        musicPLayer.seekTo(0);
+        //musicPLayer.start();
+        String duration = millisecondsToString(musicPLayer.getDuration());
+        tvDuration.setText(duration);
+
         btnPlay.setOnClickListener(this);
-    }
 
-    private void setupSeekBar(){
         seekBarTime.setMax(musicPLayer.getDuration());
         seekBarTime.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -53,16 +65,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             }
         });
-    }
-    private void setupMediaPlayer() {
-        musicPLayer = MediaPlayer.create(this, R.raw.test);
-        musicPLayer.setLooping(true);
-        musicPLayer.seekTo(0);
-        //musicPLayer.start();
-        String duration = millisecondsToString(musicPLayer.getDuration());
-        tvDuration.setText(duration);
-    }
-    private void startProgressUpdater(){
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -91,22 +93,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         }).start();
-    }
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-        bindingView();
-        bindingAction();
-        setupSeekBar();
-        setupMediaPlayer();
-        startProgressUpdater();
+
     }
 
     public String millisecondsToString(int time){
@@ -123,17 +110,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
-        if (view.getId() == R.id.btnPlay) {
-            togglePlayPause();
-        }
-    }
-    private void togglePlayPause() {
-        if (musicPLayer.isPlaying()) {
-            musicPLayer.pause();
-            btnPlay.setBackgroundResource(R.drawable.ic_button_play);
-        } else {
-            musicPLayer.start();
-            btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
+        if(view.getId()==R.id.btnPlay){
+            if(musicPLayer.isPlaying()){
+                //is playing
+                musicPLayer.pause();
+                btnPlay.setBackgroundResource(R.drawable.ic_button_play);
+            }else{
+                //on pause
+                musicPLayer.start();
+                btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
+            }
         }
     }
 }
