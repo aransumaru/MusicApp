@@ -24,35 +24,48 @@ import java.io.IOException;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     TextView tvTime, tvDuration, tvTitle, tvArtist;
-    SeekBar seekBarTime;
-    Button btnPlay;
+    SeekBar seekBarTime, seekBarVolume;
+    Button btnPlay, btnDownVolume, btnUpVolume;
     MediaPlayer musicPLayer;
-    private void bindingView(){
+    private void bindingView() {
         tvTime = findViewById(R.id.tvTime);
         tvDuration = findViewById(R.id.tvDuration);
         tvTitle = findViewById(R.id.tvTitle);
         tvArtist = findViewById(R.id.tvArtist);
         seekBarTime = findViewById(R.id.seekBarTime);
+        seekBarVolume = findViewById(R.id.seekBarVolume);
         btnPlay = findViewById(R.id.btnPlay);
-        // Nhận dữ liệu từ Intent
-        Intent intent = getIntent();
-        String title = intent.getStringExtra("title");
-        String artist = intent.getStringExtra("artist");
-
-        // Kiểm tra nếu dữ liệu null, đặt mặc định là "Unknown"
-        if (title != null) {
-            tvTitle.setText(title);
-        }
-        if (artist != null) {
-            tvArtist.setText(artist);
-        }
-
-        // Cập nhật TextView
-        tvTitle.setText(title);
-        tvArtist.setText(artist);
+        btnDownVolume = findViewById(R.id.btnDownVolume);
+        btnUpVolume = findViewById(R.id.btnUpVolume);
     }
     private void bindingAction(){
-        btnPlay.setOnClickListener(this);
+        btnPlay.setOnClickListener(this::onBtnPlayClick);
+        btnDownVolume.setOnClickListener(this::onBtnVolumeDownClick);
+        btnUpVolume.setOnClickListener(this::onBtnVolumeUpClick);
+    }
+
+    private void onBtnVolumeUpClick(View view) {
+        musicPLayer.setVolume(1.0f, 1.0f);
+        seekBarVolume.setProgress(100);
+    }
+
+    private void onBtnVolumeDownClick(View view) {
+        musicPLayer.setVolume(0.0f, 0.0f);
+        seekBarVolume.setProgress(0);
+    }
+
+    private void onBtnPlayClick(View view) {
+        if(view.getId()==R.id.btnPlay){
+            if(musicPLayer.isPlaying()){
+                //is playing
+                musicPLayer.pause();
+                btnPlay.setBackgroundResource(R.drawable.ic_button_play);
+            }else{
+                //on pause
+                musicPLayer.start();
+                btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
+            }
+        }
     }
 
     private void setupMediaPlayer() {
@@ -65,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 musicPLayer.prepare(); // Prepare the player
                 musicPLayer.setLooping(true);
                 musicPLayer.seekTo(0);
+
                 // Bắt đầu phát bài hát
                 //musicPLayer.start();
 
@@ -87,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if(isFromUser){
                     musicPLayer.seekTo(progress);
                     seekBar.setProgress(progress);
+
                 }
             }
             @Override
@@ -97,6 +112,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             }
         });
+        musicPLayer.setVolume(0.5f, 0.5f);
+        seekBarVolume.setProgress(50);
+        seekBarVolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean isFromUser) {
+                float volume = progress / 100f;
+                musicPLayer.setVolume(volume, volume);
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
     }
     private void startSeekBarUpdateThread() {
         new Thread(new Runnable() {
