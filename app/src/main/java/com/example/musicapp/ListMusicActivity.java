@@ -133,7 +133,6 @@ public class ListMusicActivity extends AppCompatActivity {
             }while(songCursor.moveToNext());
         }
         bindDataToRecyclerView();
-
     }
 
     @Override
