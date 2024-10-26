@@ -1,13 +1,19 @@
 package com.example.musicapp;
 
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -15,35 +21,31 @@ import androidx.core.view.WindowInsetsCompat;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    TextView tvTime, tvDuration;
+    TextView tvTime, tvDuration, tvTitle, tvArtist;
     SeekBar seekBarTime;
     Button btnPlay;
     MediaPlayer musicPLayer;
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-
+    private void bindingView(){
         tvTime = findViewById(R.id.tvTime);
         tvDuration = findViewById(R.id.tvDuration);
+        tvTitle = findViewById(R.id.tvTitle);
+        tvArtist = findViewById(R.id.tvArtist);
         seekBarTime = findViewById(R.id.seekBarTime);
         btnPlay = findViewById(R.id.btnPlay);
+    }
+    private void bindingAction(){
+        btnPlay.setOnClickListener(this);
+    }
 
+    private void setupMediaPlayer() {
         musicPLayer = MediaPlayer.create(this,R.raw.test);
         musicPLayer.setLooping(true);
         musicPLayer.seekTo(0);
         //musicPLayer.start();
         String duration = millisecondsToString(musicPLayer.getDuration());
         tvDuration.setText(duration);
-
-        btnPlay.setOnClickListener(this);
-
+    }
+    private void setupSeekBar() {
         seekBarTime.setMax(musicPLayer.getDuration());
         seekBarTime.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -52,19 +54,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     musicPLayer.seekTo(progress);
                     seekBar.setProgress(progress);
                 }
-
             }
-
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
             }
-
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
 
             }
         });
+    }
+    private void startSeekBarUpdateThread() {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -93,7 +93,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         }).start();
+    }
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_main);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+
+        Song song = (Song) getIntent().getSerializableExtra("song"); // Nhận Song object
+        if (song != null) {
+            tvTitle.setText(song.getTitle());
+            tvArtist.setText(song.getArtist());
+            // Các thao tác khác với song nếu cần
+        }
+        bindingView();
+        setupMediaPlayer();
+        bindingAction();
+        setupSeekBar();
+        startSeekBarUpdateThread();
     }
 
     public String millisecondsToString(int time){
@@ -107,7 +130,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         elapsedTime += seconds;
         return elapsedTime;
     }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.option_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
 
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        getMenuInflater().inflate(R.menu.option_menu, menu);
+        super.onCreateContextMenu(menu, v, menuInfo);
+    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.opt_listmusic) {
+            Toast.makeText(this, "opt_listmusic_contextmenu", Toast.LENGTH_SHORT).show();
+        } else if (item.getItemId() == R.id.opt_main) {
+            Toast.makeText(this, "opt_main_contextmenu", Toast.LENGTH_SHORT).show();
+        }
+        return super.onContextItemSelected(item);
+    }
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.opt_listmusic) {
+            Toast.makeText(this, "opt_listmusic", Toast.LENGTH_SHORT).show();
+            Intent listmusicIntent = new Intent(this, ListMusicActivity.class);
+            startActivity(listmusicIntent);
+            return true;
+        } else if (item.getItemId() == R.id.opt_main) {
+            Toast.makeText(this, "opt_main", Toast.LENGTH_SHORT).show();
+            Intent mainIntent = new Intent(this, MainActivity.class);
+            startActivity(mainIntent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
     @Override
     public void onClick(View view) {
         if(view.getId()==R.id.btnPlay){

@@ -1,5 +1,7 @@
 package com.example.musicapp;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,7 +53,11 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
 
         private void onItemViewClick(View view) {
             Toast.makeText(view.getContext(), tvTitle.getText() + " - - - " + tvArtist.getText(), Toast.LENGTH_SHORT).show();
-
+            Context context = view.getContext();
+            Intent intent = new Intent(context, MainActivity.class);
+            Song song = data.get(getAdapterPosition());
+            intent.putExtra("song", song); // Truyền Song object
+            context.startActivity(intent);
         }
 
         private void onTvTitleClick(View view) {
@@ -67,9 +73,9 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
             bindingView();
             bindingAction();
         }
-    public void setData(Song s) {
-        tvTitle.setText(s.getTitle());
-        tvArtist.setText(s.getArtist());
+        public void setData(Song s) {
+            tvTitle.setText(s.getTitle());
+            tvArtist.setText(s.getArtist());
         }
     }
 }
