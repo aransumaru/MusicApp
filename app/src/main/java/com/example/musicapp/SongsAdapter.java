@@ -52,12 +52,15 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
         }
 
         private void onItemViewClick(View view) {
-            Toast.makeText(view.getContext(), tvTitle.getText() + " - - - " + tvArtist.getText(), Toast.LENGTH_SHORT).show();
-            Context context = view.getContext();
-            Intent intent = new Intent(context, MainActivity.class);
-            Song song = data.get(getAdapterPosition());
-            intent.putExtra("song", song); // Truyền Song object
-            context.startActivity(intent);
+            int position = getAdapterPosition();
+            if (position != RecyclerView.NO_POSITION) {
+                Song song = data.get(position);
+                Intent intent = new Intent(view.getContext(), MainActivity.class);
+                intent.putExtra("title", song.getTitle());
+                intent.putExtra("artist", song.getArtist());
+                intent.putExtra("path", song.getPath());
+                view.getContext().startActivity(intent);
+            }
         }
 
         private void onTvTitleClick(View view) {

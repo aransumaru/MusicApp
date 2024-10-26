@@ -13,11 +13,6 @@ public class Song implements Serializable {
         this.path = path;
     }
 
-    public Song(String title, String artist) {
-        this.title = title;
-        this.artist = artist;
-    }
-
     public String getTitle() {
         return title;
     }

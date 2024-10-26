@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -75,6 +76,8 @@ public class ListMusicActivity extends AppCompatActivity {
         } else {
             readMusicFiles();
         }
+
+
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,6 +126,7 @@ public class ListMusicActivity extends AppCompatActivity {
                 String title = songCursor.getString(indexTitle);
                 String artist = songCursor.getString(indexArtist);
                 String path = songCursor.getString(indexData);
+                Log.d("Music Path", "Title: " + title + ", Artist: " + artist + ", Path: " + path);
                 data = new ArrayList<>();
                 data.add(new Song(title, artist, path));
 
