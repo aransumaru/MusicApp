@@ -19,6 +19,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.io.IOException;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     TextView tvTime, tvDuration, tvTitle, tvArtist;
@@ -32,19 +34,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvArtist = findViewById(R.id.tvArtist);
         seekBarTime = findViewById(R.id.seekBarTime);
         btnPlay = findViewById(R.id.btnPlay);
+        // Nhận dữ liệu từ Intent
+        Intent intent = getIntent();
+        String title = intent.getStringExtra("title");
+        String artist = intent.getStringExtra("artist");
+
+        // Kiểm tra nếu dữ liệu null, đặt mặc định là "Unknown"
+        if (title != null) {
+            tvTitle.setText(title);
+        }
+        if (artist != null) {
+            tvArtist.setText(artist);
+        }
+
+        // Cập nhật TextView
+        tvTitle.setText(title);
+        tvArtist.setText(artist);
     }
     private void bindingAction(){
         btnPlay.setOnClickListener(this);
     }
 
     private void setupMediaPlayer() {
-        musicPLayer = MediaPlayer.create(this,R.raw.test);
-        musicPLayer.setLooping(true);
-        musicPLayer.seekTo(0);
-        //musicPLayer.start();
-        String duration = millisecondsToString(musicPLayer.getDuration());
-        tvDuration.setText(duration);
+        musicPLayer = new MediaPlayer();
+        String path = getIntent().getStringExtra("path");
+
+        if (path != null) {
+            try {
+                musicPLayer.setDataSource(path);
+                musicPLayer.prepare(); // Prepare the player
+                musicPLayer.setLooping(true);
+                musicPLayer.seekTo(0);
+                // Bắt đầu phát bài hát
+                //musicPLayer.start();
+
+                String duration = millisecondsToString(musicPLayer.getDuration());
+                tvDuration.setText(duration);
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(this, "Unable to set data source: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(this, "Path is null", Toast.LENGTH_SHORT).show();
+        }
     }
+
     private void setupSeekBar() {
         seekBarTime.setMax(musicPLayer.getDuration());
         seekBarTime.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -106,11 +140,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return insets;
         });
 
-        Song song = (Song) getIntent().getSerializableExtra("song"); // Nhận Song object
+        Song song = (Song) getIntent().getSerializableExtra("song");
         if (song != null) {
             tvTitle.setText(song.getTitle());
             tvArtist.setText(song.getArtist());
-            // Các thao tác khác với song nếu cần
         }
         bindingView();
         setupMediaPlayer();
@@ -130,6 +163,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         elapsedTime += seconds;
         return elapsedTime;
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.option_menu, menu);
