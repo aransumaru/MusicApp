@@ -43,7 +43,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Intent intent = getIntent();
         String title = intent.getStringExtra("title");
         String artist = intent.getStringExtra("artist");
-
         if (title != null) {
             tvTitle.setText(title);
         }
@@ -82,6 +81,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void setupMediaPlayer() {
+        if (musicPLayer != null) {
+            // Nếu musicPLayer đã tồn tại, dừng và giải phóng nó
+            stopMusic();
+        }
         musicPLayer = new MediaPlayer();
         String path = getIntent().getStringExtra("path");
 
@@ -93,8 +96,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 musicPLayer.seekTo(0);
 
                 // Bắt đầu phát bài hát
-                //musicPLayer.start();
-
+                musicPLayer.start();
+                btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
                 String duration = millisecondsToString(musicPLayer.getDuration());
                 tvDuration.setText(duration);
             } catch (IOException e) {
@@ -255,16 +258,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     @Override
     public void onClick(View view) {
-        if(view.getId()==R.id.btnPlay){
-            if(musicPLayer.isPlaying()){
-                //is playing
-                musicPLayer.pause();
-                btnPlay.setBackgroundResource(R.drawable.ic_button_play);
-            }else{
-                //on pause
-                musicPLayer.start();
-                btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
-            }
+//        if(view.getId()==R.id.btnPlay){
+//            if(musicPLayer.isPlaying()){
+//                //is playing
+//                musicPLayer.pause();
+//                btnPlay.setBackgroundResource(R.drawable.ic_button_play);
+//            }else{
+//                //on pause
+//                musicPLayer.start();
+//                btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
+//            }
+//        }
+    }
+    public void stopMusic() {
+        if (musicPLayer != null && musicPLayer.isPlaying()) {
+            musicPLayer.stop();
+            musicPLayer.release();
+            musicPLayer = null;
+            btnPlay.setBackgroundResource(R.drawable.ic_button_play);
         }
     }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setupMediaPlayer();
+    }
+
+
 }
