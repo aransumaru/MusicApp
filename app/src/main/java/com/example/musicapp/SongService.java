@@ -7,9 +7,13 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class SongService {
     private ApiClient client;
@@ -65,6 +69,49 @@ public class SongService {
             }
             CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
             allOf.thenRun(() -> future.complete(listSong));
+        });
+        return future;
+    }
+
+    public CompletableFuture<List<Song>> search(String name) {
+        CompletableFuture<List<Song>> future = new CompletableFuture<>();
+        client.search(name).thenAccept(res -> {
+            List<Song> finalData = new ArrayList<>();
+            JSONObject jsonObject = null;
+            try {
+                jsonObject = new JSONObject(res);
+                JSONObject data = jsonObject.getJSONObject("data");
+                JSONArray songsArray = data.getJSONArray("songs");
+                List<Song> songsList = new ArrayList<>();
+
+                for (int i = 0; i < songsArray.length(); i++) {
+                    JSONObject songObject = songsArray.getJSONObject(i);
+                    Song songData = new Song();
+                    songData.setTitle(songObject.get("title").toString());
+                    songData.setArtist(songObject.get("artistsNames").toString());
+                    songData.setPath(songObject.get("encodeId").toString());
+                    songsList.add(songData);
+                }
+
+                List<CompletableFuture<Void>> futures = new ArrayList<>();
+                for (Song s : songsList) {
+                    CompletableFuture<Void> songFuture = client.getSong(s.getPath()).thenAccept(urlData -> {
+                        Gson gson = new Gson();
+                        Type mapType = new TypeToken<Map<String, Object>>() {}.getType();
+                        Map<String, Object> jsonMap = gson.fromJson(urlData, mapType);
+                        Map<String, String> dataMap = (Map<String, String>) jsonMap.get("data");
+                        String url128 = dataMap.get("128");
+                        s.setPath(url128);
+                    });
+                    futures.add(songFuture);
+                    finalData.add(s);
+                }
+                CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+                allOf.thenRun(() -> future.complete(finalData));
+
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
         });
         return future;
     }

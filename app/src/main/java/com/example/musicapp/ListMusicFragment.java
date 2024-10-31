@@ -79,8 +79,30 @@ public class ListMusicFragment extends Fragment {
 
     // hàm search music để demo
     private void searchMusic(String keyword) {
-        Toast.makeText(getActivity(), "Tìm kiếm: " + keyword, Toast.LENGTH_SHORT).show();
-        // search với keyword là data
+        fetchDataToRecyclerView(keyword);
+    }
+    private void fetchDataToRecyclerView(String title) {
+        SongsAdapter adapter = new SongsAdapter(new ArrayList<>());
+        rcv.setLayoutManager(new LinearLayoutManager(getActivity()));
+        rcv.setAdapter(adapter);
+        SongService _songService = new SongService();
+        if (title.trim() == "") {
+            _songService.getSongs().thenAccept(songs -> {
+                getActivity().runOnUiThread(() -> {
+                    adapter.data.clear();
+                    adapter.data.addAll(songs);
+                    adapter.notifyDataSetChanged();
+                });
+            });
+        } else {
+            _songService.search(title.trim()).thenAccept(songs -> {
+                getActivity().runOnUiThread(() -> {
+                    adapter.data.clear();
+                    adapter.data.addAll(songs);
+                    adapter.notifyDataSetChanged();
+                });
+            });
+        }
     }
 
     private void onListMusicClick(View view) {
@@ -93,8 +115,7 @@ public class ListMusicFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_list_music, container, false);
         bindingView(view);
         bindingAction();
-
-        bindDataToRecyclerView();
+        fetchDataToRecyclerView("");
         //requestPermission();
         return view;
     }
