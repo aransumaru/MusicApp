@@ -55,6 +55,7 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
             int position = getAdapterPosition();
             if (position != RecyclerView.NO_POSITION) {
                 Song song = data.get(position);
+                ((MainActivity) view.getContext()).stopMusic();
                 Intent intent = new Intent(view.getContext(), MainActivity.class);
                 intent.putExtra("title", song.getTitle());
                 intent.putExtra("artist", song.getArtist());
@@ -63,10 +64,12 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
             }
         }
 
+
         private void onTvTitleClick(View view) {
             int position = getAdapterPosition();
             if (position != RecyclerView.NO_POSITION) {
                 Song song = data.get(position);
+                ((MainActivity) view.getContext()).stopMusic();
                 Intent intent = new Intent(view.getContext(), MainActivity.class);
                 intent.putExtra("title", song.getTitle());
                 intent.putExtra("artist", song.getArtist());
@@ -79,6 +82,7 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
             int position = getAdapterPosition();
             if (position != RecyclerView.NO_POSITION) {
                 Song song = data.get(position);
+                ((MainActivity) view.getContext()).stopMusic();
                 Intent intent = new Intent(view.getContext(), MainActivity.class);
                 intent.putExtra("title", song.getTitle());
                 intent.putExtra("artist", song.getArtist());
