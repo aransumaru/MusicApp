@@ -1,0 +1,13 @@
+<!-- res/drawable/actionbar_background.xml -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:bottom="1dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#AA58FF"
+                android:centerColor="#FF84C0"
+                android:endColor="#5297FF"
+                android:angle="45"/>
+<!--            <solid android:color="@android:color/black" />-->
+        </shape>
+    </item>
+</layer-list>

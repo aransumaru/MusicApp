@@ -6,4 +6,25 @@
     </style>
 
     <style name="Theme.MusicApp" parent="Base.Theme.MusicApp" />
+
+    <style name="AppThemeCustom" parent="Base.Theme.MusicApp">
+        <!-- Customize your theme here. -->
+<!--        <item name="colorPrimary">@color/white</item>-->
+
+        <item name="colorAccent">@color/white</item>
+        <item name="actionBarStyle">@style/MyActionBar</item>
+        <item name="android:windowBackground">@android:color/white</item>
+    </style>
+
+    <style name="MyActionBar" parent="@style/Widget.AppCompat.ActionBar">
+<!--        <item name="background">@drawable/actionbar_background</item>-->
+        <item name="titleTextStyle">@style/MyTitleTextStyle</item>
+    </style>
+
+    <style name="MyTitleTextStyle"
+        parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:fontFamily">@font/campana</item>
+        <item name="android:textSize">50sp</item>
+    </style>
 </resources>
