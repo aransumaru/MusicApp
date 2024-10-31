@@ -20,6 +20,7 @@ public class ChatFragment extends Fragment {
     private ImageButton sendButton;
     private RecyclerView chatRecyclerView;
     private ChatAdapter chatAdapter;
+    private AiService aiService;
 
     @Nullable
     @Override
@@ -29,6 +30,8 @@ public class ChatFragment extends Fragment {
         sendButton = view.findViewById(R.id.send_button);
         chatRecyclerView = view.findViewById(R.id.chat_recycler_view);
 
+        // Initialize AiService
+        aiService = new AiService();
 
         setupRecyclerView();
 
@@ -51,28 +54,50 @@ public class ChatFragment extends Fragment {
         chatAdapter = ChatAdapter.getInstance();
         chatRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         chatRecyclerView.setAdapter(chatAdapter);
+        chatRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
     }
 
     private void sendMessage(String message) {
         // Add user message to the chat list
         chatAdapter.addMessage(new ChatMessage(message, false));
+        chatRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
 
         // Waitt here okay?
         sendButton.setImageResource(R.drawable.ic_send_disabled);
         sendButton.setEnabled(false);
 
-        //scroll
-        chatRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
 
-        // Em cong minh dung bot chat duoi nay
-        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                chatAdapter.addMessage(new ChatMessage("Bot response to: " + message, true));
+
+        // EM CONG CHO AI BOT NHAN TIN DUOI NAY
+
+//        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                chatAdapter.addMessage(new ChatMessage("Bot response to: " + message, true));
+//                chatRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
+//                sendButton.setImageResource(R.drawable.ic_send);
+//                sendButton.setEnabled(true);
+//            }
+//        }, 1000);
+
+        // Thoi anh lai lam luon
+
+        aiService.Response(message).thenAccept(response -> {
+            requireActivity().runOnUiThread(() -> {
+                chatAdapter.addMessage(new ChatMessage(response, true));
                 chatRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
                 sendButton.setImageResource(R.drawable.ic_send);
                 sendButton.setEnabled(true);
-            }
-        }, 1000);
+            });
+        }).exceptionally(e -> {
+            e.printStackTrace();
+            requireActivity().runOnUiThread(() -> {
+                chatAdapter.addMessage(new ChatMessage("Error: " + e.getMessage(), true));
+                chatRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
+                sendButton.setImageResource(R.drawable.ic_send);
+                sendButton.setEnabled(true);
+            });
+            return null;
+        });
     }
 }

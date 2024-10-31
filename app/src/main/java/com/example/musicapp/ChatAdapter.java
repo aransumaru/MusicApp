@@ -62,18 +62,15 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
         public void bind(ChatMessage message) {
             messageText.setText(message.getMessage());
             if (message.isBot()) {
+                messageText.setBackgroundResource(R.drawable.chat_message_bot);
                 messageLayout.setGravity(Gravity.START);
             } else {
+                messageText.setBackgroundResource(R.drawable.chat_message_user);
                 messageLayout.setGravity(Gravity.END);
             }
         }
+
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    public void updateMessages(List<ChatMessage> newMessages) {
-        messages.clear();
-        messages.addAll(newMessages);
-        notifyDataSetChanged();
-    }
 }
 
