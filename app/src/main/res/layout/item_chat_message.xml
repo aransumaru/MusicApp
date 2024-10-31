@@ -12,6 +12,6 @@
         android:layout_height="wrap_content"
         android:padding="10dp"
         android:textColor="@android:color/white"
-        android:background="@drawable/chat_message_background"
+        android:background="@drawable/chat_message_bot"
         android:textSize="16sp" />
 </LinearLayout>
