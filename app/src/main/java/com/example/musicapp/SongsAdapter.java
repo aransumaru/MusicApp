@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> {
-    private List<Song> data;
+    List<Song> data;
 
     public SongsAdapter(List<Song> data) {
         this.data = data;
@@ -64,11 +64,27 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
         }
 
         private void onTvTitleClick(View view) {
-            Toast.makeText(view.getContext(), tvArtist.getText(), Toast.LENGTH_SHORT).show();
+            int position = getAdapterPosition();
+            if (position != RecyclerView.NO_POSITION) {
+                Song song = data.get(position);
+                Intent intent = new Intent(view.getContext(), MainActivity.class);
+                intent.putExtra("title", song.getTitle());
+                intent.putExtra("artist", song.getArtist());
+                intent.putExtra("path", song.getPath());
+                view.getContext().startActivity(intent);
+            }
         }
 
         private void onTvArtistClick(View view) {
-            Toast.makeText(view.getContext(), tvArtist.getText(), Toast.LENGTH_SHORT).show();
+            int position = getAdapterPosition();
+            if (position != RecyclerView.NO_POSITION) {
+                Song song = data.get(position);
+                Intent intent = new Intent(view.getContext(), MainActivity.class);
+                intent.putExtra("title", song.getTitle());
+                intent.putExtra("artist", song.getArtist());
+                intent.putExtra("path", song.getPath());
+                view.getContext().startActivity(intent);
+            }
         }
 
         public ViewHolder(@NonNull View itemView) {

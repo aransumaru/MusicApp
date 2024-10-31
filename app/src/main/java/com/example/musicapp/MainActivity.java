@@ -37,6 +37,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnPlay = findViewById(R.id.btnPlay);
         btnDownVolume = findViewById(R.id.btnDownVolume);
         btnUpVolume = findViewById(R.id.btnUpVolume);
+        IntentView();
+    }
+    private void IntentView(){
+        Intent intent = getIntent();
+        String title = intent.getStringExtra("title");
+        String artist = intent.getStringExtra("artist");
+
+        if (title != null) {
+            tvTitle.setText(title);
+        }
+        if (artist != null) {
+            tvArtist.setText(artist);
+        }
     }
     private void bindingAction(){
         btnPlay.setOnClickListener(this::onBtnPlayClick);
@@ -89,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Toast.makeText(this, "Unable to set data source: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         } else {
-            Toast.makeText(this, "Path is null", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Path is null", Toast.LENGTH_SHORT).show();
         }
     }
 
