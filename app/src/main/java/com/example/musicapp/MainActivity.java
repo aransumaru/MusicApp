@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -27,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean isListMusicVisible = false;
     MediaPlayer musicPlayer;
     private Song currentSong;
+    ConstraintLayout main;
 
     // Phương thức bindingView
     private void bindingView() {
@@ -41,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnUpVolume = findViewById(R.id.btnUpVolume);
         btnMain = findViewById(R.id.btnMain);
         btnListMusic = findViewById(R.id.btnListMusic);
+        main = findViewById(R.id.main);
     }
 
     // Phương thức bindingAction
@@ -50,7 +53,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnUpVolume.setOnClickListener(this::onBtnVolumeUpClick);
         btnMain.setOnClickListener(this::onBtnMainClick);
         btnListMusic.setOnClickListener(this::onBtnListMusicClick);
+        main.setOnClickListener(this::onConstraintLayoutMainClick);
     }
+
+    private void onConstraintLayoutMainClick(View view) {
+        if (isListMusicVisible && listMusicFragment != null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .hide(listMusicFragment)
+                    .commit();
+            isListMusicVisible = false;
+        }
+    }
+
     public Song getCurrentSong() {
         return currentSong; // Trả về bài hát hiện tại
     }
