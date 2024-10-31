@@ -48,7 +48,7 @@ public class ListMusicActivity extends AppCompatActivity {
     }
 
     private void onListMusicClick(View view) {
-        Toast.makeText(this, "ListMusic Clicked!", Toast.LENGTH_SHORT).show();
+
     }
     private void requestPermission(){
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -74,7 +74,7 @@ public class ListMusicActivity extends AppCompatActivity {
                         REQUEST_READ_EXTERNAL_STORAGE_PERMISSION);
             }
         } else {
-            readMusicFiles();
+            //readMusicFiles();
         }
 
 
@@ -92,14 +92,29 @@ public class ListMusicActivity extends AppCompatActivity {
         data = new ArrayList<>();
         bindingView();
         bindingAction();
-        requestPermission();
+        //requestPermission();
+        bindDataToRecyclerView();
     }
     private void bindDataToRecyclerView() {
-        SongsAdapter adapter = new SongsAdapter(data);
-        rcv.setAdapter(adapter);
+        data = new ArrayList<>();
+        SongsAdapter adapter = new SongsAdapter(new ArrayList<>());
         rcv.setLayoutManager(new LinearLayoutManager(this));
-        adapter.notifyDataSetChanged();
+        rcv.setAdapter(adapter);
+
+        new SongService().getSongs().thenAccept(songs -> {
+            runOnUiThread(() -> {
+                adapter.data.clear();
+                adapter.data.addAll(songs);
+                adapter.notifyDataSetChanged();
+            });
+        });
     }
+//    private void bindDataToRecyclerView() {
+//        SongsAdapter adapter = new SongsAdapter(data);
+//        rcv.setAdapter(adapter);
+//        rcv.setLayoutManager(new LinearLayoutManager(this));
+//        adapter.notifyDataSetChanged();
+//    }
 
 
     @Override
@@ -107,33 +122,14 @@ public class ListMusicActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_READ_EXTERNAL_STORAGE_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                readMusicFiles();
+
             } else {
                 Toast.makeText(this, "Permission denied to read music files", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    private void readMusicFiles() {
-        ContentResolver contentResolver = getContentResolver();
-        Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        Cursor songCursor = contentResolver.query(songUri, null, null, null, null);
-        if(songCursor != null && songCursor.moveToFirst()){
-            int indexTitle = songCursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
-            int indexArtist = songCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
-            int indexData = songCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
-            do {
-                String title = songCursor.getString(indexTitle);
-                String artist = songCursor.getString(indexArtist);
-                String path = songCursor.getString(indexData);
-                Log.d("Music Path", "Title: " + title + ", Artist: " + artist + ", Path: " + path);
-                data = new ArrayList<>();
-                data.add(new Song(title, artist, path));
 
-            }while(songCursor.moveToNext());
-        }
-        bindDataToRecyclerView();
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
