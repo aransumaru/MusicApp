@@ -267,4 +267,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     }
+    public void stopMusic() {
+        if (musicPLayer != null && musicPLayer.isPlaying()) {
+            musicPLayer.stop();
+            musicPLayer.release();
+            musicPLayer = null;
+            btnPlay.setBackgroundResource(R.drawable.ic_button_play);
+        }
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setupMediaPlayer();
+    }
+
+
 }
