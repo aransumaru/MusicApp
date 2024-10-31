@@ -3,9 +3,7 @@ package com.example.musicapp;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.view.ContextMenu;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
@@ -13,7 +11,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -25,8 +22,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     TextView tvTime, tvDuration, tvTitle, tvArtist;
     SeekBar seekBarTime, seekBarVolume;
-    Button btnPlay, btnDownVolume, btnUpVolume;
-    MediaPlayer musicPLayer;
+    Button btnPlay, btnDownVolume, btnUpVolume, btnMain, btnListMusic;
+    private ListMusicFragment listMusicFragment;
+    private boolean isListMusicVisible = false;
+    MediaPlayer musicPlayer;
+    private Song currentSong;
+
+    // Phương thức bindingView
     private void bindingView() {
         tvTime = findViewById(R.id.tvTime);
         tvDuration = findViewById(R.id.tvDuration);
@@ -37,150 +39,225 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnPlay = findViewById(R.id.btnPlay);
         btnDownVolume = findViewById(R.id.btnDownVolume);
         btnUpVolume = findViewById(R.id.btnUpVolume);
-        IntentView();
+        btnMain = findViewById(R.id.btnMain);
+        btnListMusic = findViewById(R.id.btnListMusic);
     }
-    private void IntentView(){
-        Intent intent = getIntent();
-        String title = intent.getStringExtra("title");
-        String artist = intent.getStringExtra("artist");
-        if (title != null) {
-            tvTitle.setText(title);
-        }
-        if (artist != null) {
-            tvArtist.setText(artist);
-        }
-    }
-    private void bindingAction(){
+
+    // Phương thức bindingAction
+    private void bindingAction() {
         btnPlay.setOnClickListener(this::onBtnPlayClick);
         btnDownVolume.setOnClickListener(this::onBtnVolumeDownClick);
         btnUpVolume.setOnClickListener(this::onBtnVolumeUpClick);
+        btnMain.setOnClickListener(this::onBtnMainClick);
+        btnListMusic.setOnClickListener(this::onBtnListMusicClick);
+    }
+    public Song getCurrentSong() {
+        return currentSong; // Trả về bài hát hiện tại
     }
 
-    private void onBtnVolumeUpClick(View view) {
-        musicPLayer.setVolume(1.0f, 1.0f);
-        seekBarVolume.setProgress(100);
-    }
-
-    private void onBtnVolumeDownClick(View view) {
-        musicPLayer.setVolume(0.0f, 0.0f);
-        seekBarVolume.setProgress(0);
-    }
-
-    private void onBtnPlayClick(View view) {
-        if(view.getId()==R.id.btnPlay){
-            if(musicPLayer.isPlaying()){
-                //is playing
-                musicPLayer.pause();
-                btnPlay.setBackgroundResource(R.drawable.ic_button_play);
-            }else{
-                //on pause
-                musicPLayer.start();
-                btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
+    // Phương thức cập nhật giao diện với bài hát
+    public void updateUIWithSong(Song song) {
+        if (song != null) {
+            if (currentSong != null && currentSong.getPath().equals(song.getPath())) {
+                Log.d("MusicPlayer", "Song is already playing: " + song.getTitle());
+                return;
             }
+
+            currentSong = song;
+
+            tvTitle.setText(song.getTitle());
+            tvArtist.setText(song.getArtist());
+            setupMediaPlayer(song.getPath());
         }
     }
 
-    private void setupMediaPlayer() {
-        if (musicPLayer != null) {
-            // Nếu musicPLayer đã tồn tại, dừng và giải phóng nó
-            stopMusic();
-        }
-        musicPLayer = new MediaPlayer();
-        String path = getIntent().getStringExtra("path");
 
+    // Phương thức thiết lập MediaPlayer
+    private void setupMediaPlayer(String path) {
+        if (musicPlayer != null) {
+            stopMusic(); // Dừng nhạc nếu đang phát
+        }
+        musicPlayer = new MediaPlayer();
         if (path != null) {
             try {
-                musicPLayer.setDataSource(path);
-                musicPLayer.prepare(); // Prepare the player
-                musicPLayer.setLooping(true);
-                musicPLayer.seekTo(0);
-
-                // Bắt đầu phát bài hát
-                musicPLayer.start();
+                musicPlayer.setDataSource(path);
+                musicPlayer.prepare();
+                musicPlayer.setLooping(true);
+                musicPlayer.start();
                 btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
-                String duration = millisecondsToString(musicPLayer.getDuration());
+                String duration = millisecondsToString(musicPlayer.getDuration());
                 tvDuration.setText(duration);
+
+
+                setupSeekBar();
+                startSeekBarUpdateThread();
             } catch (IOException e) {
                 e.printStackTrace();
                 Toast.makeText(this, "Unable to set data source: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
-        } else {
-            //Toast.makeText(this, "Path is null", Toast.LENGTH_SHORT).show();
         }
     }
 
+
+    // Phương thức dừng nhạc
+    void stopMusic() {
+        if (musicPlayer != null) {
+            if (musicPlayer.isPlaying()) {
+                musicPlayer.stop();
+                musicPlayer.release();
+                musicPlayer = null;
+                Log.d("MusicPlayer", "Music stopped.");
+                btnPlay.setBackgroundResource(R.drawable.ic_button_play);
+            }
+        }
+    }
+
+    // Phương thức xử lý nút Play
+    private void onBtnPlayClick(View view) {
+        if (musicPlayer != null) {
+            if (musicPlayer.isPlaying()) {
+                musicPlayer.pause();
+                btnPlay.setBackgroundResource(R.drawable.ic_button_play);
+            } else {
+                musicPlayer.start();
+                btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
+            }
+        }
+    }
+
+    // Phương thức xử lý nút tăng âm lượng
+    private void onBtnVolumeUpClick(View view) {
+        if (musicPlayer != null) {
+            musicPlayer.setVolume(1.0f, 1.0f);
+            seekBarVolume.setProgress(100);
+        }
+    }
+
+    // Phương thức xử lý nút giảm âm lượng
+    private void onBtnVolumeDownClick(View view) {
+        if (musicPlayer != null) {
+            musicPlayer.setVolume(0.0f, 0.0f);
+            seekBarVolume.setProgress(0);
+        }
+    }
+
+    // Phương thức xử lý nút Main
+    private void onBtnMainClick(View view) {
+        if (isListMusicVisible && listMusicFragment != null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .hide(listMusicFragment)
+                    .commit();
+            isListMusicVisible = false;
+        }
+    }
+
+    // Phương thức xử lý nút danh sách nhạc
+    private void onBtnListMusicClick(View view) {
+        if (listMusicFragment == null) {
+            listMusicFragment = new ListMusicFragment();
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.fragment_container, listMusicFragment)
+                    .commit();
+        }
+        getSupportFragmentManager()
+                .beginTransaction()
+                .show(listMusicFragment)
+                .commit();
+        isListMusicVisible = true;
+    }
+
+    // Phương thức thiết lập SeekBar
     private void setupSeekBar() {
-        seekBarTime.setMax(musicPLayer.getDuration());
+        seekBarTime.setMax(musicPlayer.getDuration());
+        seekBarTime.setProgress(0);
         seekBarTime.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean isFromUser) {
-                if(isFromUser){
-                    musicPLayer.seekTo(progress);
+                if (isFromUser && musicPlayer != null) {
+                    musicPlayer.seekTo(progress);
                     seekBar.setProgress(progress);
-
                 }
             }
+
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
             }
+
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
             }
         });
-        musicPLayer.setVolume(0.5f, 0.5f);
+
         seekBarVolume.setProgress(50);
         seekBarVolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean isFromUser) {
                 float volume = progress / 100f;
-                musicPLayer.setVolume(volume, volume);
-
+                if (musicPlayer != null) {
+                    musicPlayer.setVolume(volume, volume);
+                }
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
+            public void onStartTrackingTouch(SeekBar seekBar) {}
 
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
+            public void onStopTrackingTouch(SeekBar seekBar) {}
         });
-
     }
+
+
+    // Phương thức khởi động thread cập nhật SeekBar
     private void startSeekBarUpdateThread() {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                while (musicPLayer != null){
-                    if(musicPLayer.isPlaying()){
+                while (musicPlayer != null) {
+                    if (musicPlayer.isPlaying()) {
                         try {
-                            final double current = musicPLayer.getCurrentPosition();
-//                            double duration = musicPLayer.getDuration();
-//                            final double position =(100.0/duration) * current;
-                            final String elapsedTime = millisecondsToString((int) current);
+                            final int current = musicPlayer.getCurrentPosition();
+                            final int duration = musicPlayer.getDuration();
+                            Log.d("MusicPlayer", "Current Position: " + current + ", Duration: " + duration);
+
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    tvTime.setText(elapsedTime);
-                                    seekBarTime.setProgress((int)current);
+                                    tvTime.setText(millisecondsToString(current));
+                                    seekBarTime.setMax(duration);
+                                    seekBarTime.setProgress(current);
                                 }
                             });
 
-
                             Thread.sleep(1000);
-
-                        }catch (InterruptedException e){
-
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
                         }
+                    } else {
+                        break;
                     }
                 }
             }
         }).start();
     }
 
+
+
+    // Phương thức chuyển đổi milliseconds thành String
+    public String millisecondsToString(int time) {
+        String elapsedTime;
+        int minutes = time / 1000 / 60;
+        int seconds = time / 1000 % 60;
+        elapsedTime = minutes + ":";
+        if (seconds < 10) {
+            elapsedTime += "0";
+        }
+        elapsedTime += seconds;
+        return elapsedTime;
+    }
+
+    // Phương thức onCreate
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -192,97 +269,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return insets;
         });
 
-        Song song = (Song) getIntent().getSerializableExtra("song");
-        if (song != null) {
-            tvTitle.setText(song.getTitle());
-            tvArtist.setText(song.getArtist());
-        }
         bindingView();
-        setupMediaPlayer();
         bindingAction();
-        setupSeekBar();
         startSeekBarUpdateThread();
     }
 
-    public String millisecondsToString(int time){
-        String elapsedTime = "";
-        int minutes = time / 1000 / 60;
-        int seconds = time / 1000 % 60;
-        elapsedTime = minutes+":";
-        if(seconds < 10){
-            elapsedTime +="0";
-        }
-        elapsedTime += seconds;
-        return elapsedTime;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.option_menu, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        getMenuInflater().inflate(R.menu.option_menu, menu);
-        super.onCreateContextMenu(menu, v, menuInfo);
-    }
-
-    @Override
-    public boolean onContextItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.opt_listmusic) {
-            Toast.makeText(this, "opt_listmusic_contextmenu", Toast.LENGTH_SHORT).show();
-        } else if (item.getItemId() == R.id.opt_main) {
-            Toast.makeText(this, "opt_main_contextmenu", Toast.LENGTH_SHORT).show();
-        }
-        return super.onContextItemSelected(item);
-    }
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.opt_listmusic) {
-            //Toast.makeText(this, "opt_listmusic", Toast.LENGTH_SHORT).show();
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new ListMusicFragment())
-                    .addToBackStack(null)
-                    .commit();
-            //Toast.makeText(this, "on open fragment", Toast.LENGTH_SHORT).show();
-
-            return true;
-        } else if (item.getItemId() == R.id.opt_main) {
-            //Toast.makeText(this, "opt_main", Toast.LENGTH_SHORT).show();
-            Intent mainIntent = new Intent(this, MainActivity.class);
-            startActivity(mainIntent);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-    @Override
-    public void onClick(View view) {
-//        if(view.getId()==R.id.btnPlay){
-//            if(musicPLayer.isPlaying()){
-//                //is playing
-//                musicPLayer.pause();
-//                btnPlay.setBackgroundResource(R.drawable.ic_button_play);
-//            }else{
-//                //on pause
-//                musicPLayer.start();
-//                btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
-//            }
-//        }
-    }
-    public void stopMusic() {
-        if (musicPLayer != null && musicPLayer.isPlaying()) {
-            musicPLayer.stop();
-            musicPLayer.release();
-            musicPLayer = null;
-            btnPlay.setBackgroundResource(R.drawable.ic_button_play);
-        }
-    }
     @Override
     protected void onResume() {
         super.onResume();
-        setupMediaPlayer();
+        if (musicPlayer != null && !musicPlayer.isPlaying()) {
+            musicPlayer.start(); // Bắt đầu lại nếu nhạc đã dừng
+        }
+        startSeekBarUpdateThread();
     }
+    @Override
+    protected void onPause() {
+        super.onPause();
 
+    }
+    @Override
+    public void onClick(View view) {
 
+    }
 }

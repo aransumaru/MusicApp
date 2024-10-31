@@ -1,12 +1,12 @@
 package com.example.musicapp;
 
-import android.content.Context;
-import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
@@ -17,6 +17,7 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
     public SongsAdapter(List<Song> data) {
         this.data = data;
     }
+
     @NonNull
     @Override
     public SongsAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -27,8 +28,7 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull SongsAdapter.ViewHolder holder, int position) {
-        Song s = data.get(position);
-        holder.setData(s);
+        holder.setData(data.get(position));
     }
 
     @Override
@@ -37,65 +37,46 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        private TextView tvTitle;
-        private TextView tvArtist;
+        TextView tvTitle, tvArtist;
 
-        private void bindingView() {
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
             tvTitle = itemView.findViewById(R.id.tvTitle);
             tvArtist = itemView.findViewById(R.id.tvArtist);
-        }
-
-        private void bindingAction() {
             tvTitle.setOnClickListener(this::onTvTitleClick);
             tvArtist.setOnClickListener(this::onTvArtistClick);
             itemView.setOnClickListener(this::onItemViewClick);
         }
 
+
         private void onItemViewClick(View view) {
             int position = getAdapterPosition();
             if (position != RecyclerView.NO_POSITION) {
                 Song song = data.get(position);
-                ((MainActivity) view.getContext()).stopMusic();
-                Intent intent = new Intent(view.getContext(), MainActivity.class);
-                intent.putExtra("title", song.getTitle());
-                intent.putExtra("artist", song.getArtist());
-                intent.putExtra("path", song.getPath());
-                view.getContext().startActivity(intent);
+
+                MainActivity mainActivity = (MainActivity) view.getContext();
+                Song currentSong = mainActivity.getCurrentSong();
+
+                if (currentSong == null || !currentSong.getPath().equals(song.getPath())) {
+                    mainActivity.stopMusic();
+                    mainActivity.updateUIWithSong(song);
+                    String message = "Đã chọn bài hát " + song.getTitle();
+                    Toast.makeText(mainActivity, message, Toast.LENGTH_SHORT).show();
+                } else {
+                    String message = song.getTitle() + " đang được phát.";
+                    Toast.makeText(mainActivity, message, Toast.LENGTH_SHORT).show();
+                }
             }
         }
 
-
         private void onTvTitleClick(View view) {
-            int position = getAdapterPosition();
-            if (position != RecyclerView.NO_POSITION) {
-                Song song = data.get(position);
-                ((MainActivity) view.getContext()).stopMusic();
-                Intent intent = new Intent(view.getContext(), MainActivity.class);
-                intent.putExtra("title", song.getTitle());
-                intent.putExtra("artist", song.getArtist());
-                intent.putExtra("path", song.getPath());
-                view.getContext().startActivity(intent);
-            }
+            onItemViewClick(view);
         }
 
         private void onTvArtistClick(View view) {
-            int position = getAdapterPosition();
-            if (position != RecyclerView.NO_POSITION) {
-                Song song = data.get(position);
-                ((MainActivity) view.getContext()).stopMusic();
-                Intent intent = new Intent(view.getContext(), MainActivity.class);
-                intent.putExtra("title", song.getTitle());
-                intent.putExtra("artist", song.getArtist());
-                intent.putExtra("path", song.getPath());
-                view.getContext().startActivity(intent);
-            }
+            onItemViewClick(view);
         }
 
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            bindingView();
-            bindingAction();
-        }
         public void setData(Song s) {
             tvTitle.setText(s.getTitle());
             tvArtist.setText(s.getArtist());
