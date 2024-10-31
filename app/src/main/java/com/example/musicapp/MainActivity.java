@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ListMusicFragment listMusicFragment;
     private boolean isListMusicVisible = false;
     MediaPlayer musicPlayer;
+    private Song currentSong;
 
     // Phương thức bindingView
     private void bindingView() {
@@ -50,15 +51,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnMain.setOnClickListener(this::onBtnMainClick);
         btnListMusic.setOnClickListener(this::onBtnListMusicClick);
     }
+    public Song getCurrentSong() {
+        return currentSong; // Trả về bài hát hiện tại
+    }
 
     // Phương thức cập nhật giao diện với bài hát
     public void updateUIWithSong(Song song) {
         if (song != null) {
+            if (currentSong != null && currentSong.getPath().equals(song.getPath())) {
+                Log.d("MusicPlayer", "Song is already playing: " + song.getTitle());
+                return;
+            }
+
+            currentSong = song;
+
             tvTitle.setText(song.getTitle());
             tvArtist.setText(song.getArtist());
             setupMediaPlayer(song.getPath());
         }
     }
+
 
     // Phương thức thiết lập MediaPlayer
     private void setupMediaPlayer(String path) {
@@ -94,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 musicPlayer.stop();
                 musicPlayer.release();
                 musicPlayer = null;
+                Log.d("MusicPlayer", "Music stopped.");
                 btnPlay.setBackgroundResource(R.drawable.ic_button_play);
             }
         }

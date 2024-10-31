@@ -1,9 +1,12 @@
 package com.example.musicapp;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
@@ -45,12 +48,24 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
             itemView.setOnClickListener(this::onItemViewClick);
         }
 
+
         private void onItemViewClick(View view) {
             int position = getAdapterPosition();
             if (position != RecyclerView.NO_POSITION) {
                 Song song = data.get(position);
-                ((MainActivity) view.getContext()).stopMusic();
-                ((MainActivity) view.getContext()).updateUIWithSong(song);
+
+                MainActivity mainActivity = (MainActivity) view.getContext();
+                Song currentSong = mainActivity.getCurrentSong();
+
+                if (currentSong == null || !currentSong.getPath().equals(song.getPath())) {
+                    mainActivity.stopMusic();
+                    mainActivity.updateUIWithSong(song);
+                    String message = "Đã chọn bài hát " + song.getTitle();
+                    Toast.makeText(mainActivity, message, Toast.LENGTH_SHORT).show();
+                } else {
+                    String message = song.getTitle() + " đang được phát.";
+                    Toast.makeText(mainActivity, message, Toast.LENGTH_SHORT).show();
+                }
             }
         }
 
