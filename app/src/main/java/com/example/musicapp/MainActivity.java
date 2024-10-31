@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,15 +16,21 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
+    private static final String CHAT_FRAGMENT_TAG = "CHAT_FRAGMENT";
+
     TextView tvTime, tvDuration, tvTitle, tvArtist;
     SeekBar seekBarTime, seekBarVolume;
     Button btnPlay, btnDownVolume, btnUpVolume, btnMain, btnListMusic;
     private ListMusicFragment listMusicFragment;
+    private ChatFragment chatFragment;
+    private ImageView chatBubble;
     private boolean isListMusicVisible = false;
     MediaPlayer musicPlayer;
     private Song currentSong;
@@ -41,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnUpVolume = findViewById(R.id.btnUpVolume);
         btnMain = findViewById(R.id.btnMain);
         btnListMusic = findViewById(R.id.btnListMusic);
+        chatBubble = findViewById(R.id.chat_bubble);
     }
 
     // Phương thức bindingAction
@@ -50,7 +58,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnUpVolume.setOnClickListener(this::onBtnVolumeUpClick);
         btnMain.setOnClickListener(this::onBtnMainClick);
         btnListMusic.setOnClickListener(this::onBtnListMusicClick);
+        chatBubble.setOnClickListener(this::onBtnChatBubbleClick);
     }
+
+    private void onBtnChatBubbleClick(View view) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment chatFragment = fragmentManager.findFragmentByTag(CHAT_FRAGMENT_TAG);
+
+        if (chatFragment != null && chatFragment.isVisible()) {
+            fragmentManager.beginTransaction()
+                    .setCustomAnimations(R.anim.scale_in, R.anim.scale_out) // Set animations for popping
+                    .remove(chatFragment)
+                    .commit();
+        } else {
+            // Create a new instance of ChatFragment
+            Fragment newChatFragment = new ChatFragment();
+            fragmentManager.beginTransaction()
+                    .setCustomAnimations(R.anim.scale_in, R.anim.scale_out) // Set animations for adding
+                    .replace(R.id.fragment_container, newChatFragment, CHAT_FRAGMENT_TAG)
+                    .addToBackStack(null)
+                    .commit();
+        }
+    }
+
     public Song getCurrentSong() {
         return currentSong; // Trả về bài hát hiện tại
     }
