@@ -237,12 +237,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.opt_listmusic) {
-            Toast.makeText(this, "opt_listmusic", Toast.LENGTH_SHORT).show();
-            Intent listmusicIntent = new Intent(this, ListMusicActivity.class);
-            startActivity(listmusicIntent);
+            //Toast.makeText(this, "opt_listmusic", Toast.LENGTH_SHORT).show();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new ListMusicFragment())
+                    .addToBackStack(null)
+                    .commit();
+            //Toast.makeText(this, "on open fragment", Toast.LENGTH_SHORT).show();
+
             return true;
         } else if (item.getItemId() == R.id.opt_main) {
-            Toast.makeText(this, "opt_main", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "opt_main", Toast.LENGTH_SHORT).show();
             Intent mainIntent = new Intent(this, MainActivity.class);
             startActivity(mainIntent);
             return true;
