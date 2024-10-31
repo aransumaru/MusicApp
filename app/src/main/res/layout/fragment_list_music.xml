@@ -9,15 +9,46 @@
     android:padding="16dp"
     android:background="@drawable/background">
 
+    <LinearLayout
+        android:id="@+id/layout1"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <EditText
+            android:id="@+id/edtSearch"
+            android:layout_width="276dp"
+            android:layout_height="match_parent"
+            android:background="#464281"
+            android:backgroundTint="#14FFFFFF"
+            android:hint="Tìm Kiếm"
+            android:paddingStart="20dp"
+            android:textColorHint="#77FFFFFF"
+            android:textSize="18sp"
+            android:layout_marginRight="-44dp"/>
+
+        <Button
+            android:layout_marginLeft="51dp"
+            android:id="@+id/btnSearch"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/ic_button_search"/>
+
+    </LinearLayout>
+
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rcv"
         android:layout_width="341dp"
         android:layout_height="564dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.486"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.678" />
+
+        app:layout_constraintTop_toBottomOf="@+id/layout1"
+        app:layout_constraintVertical_bias="0.328" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
