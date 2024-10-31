@@ -25,7 +25,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     TextView tvTime, tvDuration, tvTitle, tvArtist;
     SeekBar seekBarTime, seekBarVolume;
-    Button btnPlay, btnDownVolume, btnUpVolume;
+    Button btnPlay, btnDownVolume, btnUpVolume, btnMain, btnListMusic;
+    private ListMusicFragment listMusicFragment;
+    private boolean isListMusicVisible = false;
     MediaPlayer musicPLayer;
     private void bindingView() {
         tvTime = findViewById(R.id.tvTime);
@@ -37,6 +39,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnPlay = findViewById(R.id.btnPlay);
         btnDownVolume = findViewById(R.id.btnDownVolume);
         btnUpVolume = findViewById(R.id.btnUpVolume);
+        //fragment
+        btnMain = findViewById(R.id.btnMain);
+        btnListMusic = findViewById(R.id.btnListMusic);
+        //fragment
         IntentView();
     }
     private void IntentView(){
@@ -54,8 +60,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnPlay.setOnClickListener(this::onBtnPlayClick);
         btnDownVolume.setOnClickListener(this::onBtnVolumeDownClick);
         btnUpVolume.setOnClickListener(this::onBtnVolumeUpClick);
+        //fragment
+        btnMain.setOnClickListener(this::onBtnMainClick);
+        btnListMusic.setOnClickListener(this::onBtnListMusicClick);
+        //fragment
     }
-
+    //fragment
+    private void onBtnListMusicClick(View view) {
+        if (listMusicFragment == null) {
+            listMusicFragment = new ListMusicFragment();
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.fragment_container, listMusicFragment)
+                    .commit();
+        }
+        getSupportFragmentManager()
+                .beginTransaction()
+                .show(listMusicFragment)
+                .commit();
+        isListMusicVisible = true;
+    }
+    //fragment
+    //fragment
+    private void onBtnMainClick(View view) {
+        if (isListMusicVisible && listMusicFragment != null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .hide(listMusicFragment)
+                    .commit();
+            isListMusicVisible = false;
+        }
+    }
+    //fragment
     private void onBtnVolumeUpClick(View view) {
         musicPLayer.setVolume(1.0f, 1.0f);
         seekBarVolume.setProgress(100);
@@ -216,46 +252,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return elapsedTime;
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.option_menu, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        getMenuInflater().inflate(R.menu.option_menu, menu);
-        super.onCreateContextMenu(menu, v, menuInfo);
-    }
-
-    @Override
-    public boolean onContextItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.opt_listmusic) {
-            Toast.makeText(this, "opt_listmusic_contextmenu", Toast.LENGTH_SHORT).show();
-        } else if (item.getItemId() == R.id.opt_main) {
-            Toast.makeText(this, "opt_main_contextmenu", Toast.LENGTH_SHORT).show();
-        }
-        return super.onContextItemSelected(item);
-    }
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.opt_listmusic) {
-            //Toast.makeText(this, "opt_listmusic", Toast.LENGTH_SHORT).show();
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new ListMusicFragment())
-                    .addToBackStack(null)
-                    .commit();
-            //Toast.makeText(this, "on open fragment", Toast.LENGTH_SHORT).show();
-
-            return true;
-        } else if (item.getItemId() == R.id.opt_main) {
-            //Toast.makeText(this, "opt_main", Toast.LENGTH_SHORT).show();
-            Intent mainIntent = new Intent(this, MainActivity.class);
-            startActivity(mainIntent);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
     @Override
     public void onClick(View view) {
 //        if(view.getId()==R.id.btnPlay){

@@ -92,7 +92,7 @@
         android:id="@+id/btnPlay"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginTop="480dp"
+        android:layout_marginTop="472dp"
         android:background="@drawable/ic_button_play"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
@@ -100,46 +100,88 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <RelativeLayout
-        android:layout_width="match_parent"
+        android:id="@+id/relativeLayout3"
+        android:layout_width="346dp"
         android:layout_height="44dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.428"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnPlay">
 
         <Button
-
             android:id="@+id/btnDownVolume"
             android:layout_width="59dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:background="@drawable/ic_volume_down" />
 
         <SeekBar
             android:id="@+id/seekBarVolume"
             android:layout_width="200dp"
             android:layout_height="match_parent"
-            android:layout_marginLeft="108dp"
+            android:layout_marginLeft="70dp"
             android:progress="0"
             android:progressTint="#fff" />
 
         <Button
             android:id="@+id/btnUpVolume"
-            android:background="@drawable/ic_volume_up"
             android:layout_width="59dp"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="350dp"
-            />
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="290dp"
+            android:background="@drawable/ic_volume_up" />
 
 
     </RelativeLayout>
+
     <!-- activity_main.xml -->
-    <FrameLayout
-        android:id="@+id/fragment_container"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="685dp"
+        android:layout_height="wrap_content"
+
+        android:layout_marginTop="68dp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"></FrameLayout>
+        app:layout_constraintTop_toBottomOf="@+id/relativeLayout3">
+
+        <Button
+            android:id="@+id/btnMain"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="40dp"
+            android:backgroundTint="#07FFFFFF"
+            android:text="Trang Chủ"
+            app:cornerRadius="4dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+            android:id="@+id/btnListMusic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="220dp"
+            android:backgroundTint="#07FFFFFF"
+            android:text="Danh Sách"
+            app:cornerRadius="4dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </RelativeLayout>
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragment_container"
+
+        android:layout_width="389dp"
+        android:layout_height="537dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.567"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
