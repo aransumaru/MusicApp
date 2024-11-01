@@ -189,6 +189,7 @@ public class MainActivity extends AppCompatActivity {
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setSound(null)
                 .setAutoCancel(false)
+                .setOngoing(true)
                 .addAction(
                         musicPlayer.isPlaying() ? R.drawable.ic_button_pause : R.drawable.ic_button_play,
                         musicPlayer.isPlaying() ? "Pause" : "Play",
@@ -482,6 +483,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // Hủy thông báo nếu ứng dụng bị đóng
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.cancel(1); // Hủy thông báo có ID 1
+        if (musicPlayer != null) {
+            musicPlayer.stop();
+            musicPlayer.release();
+            musicPlayer = null;
+        }
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
     }
 }
