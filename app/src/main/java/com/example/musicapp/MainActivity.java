@@ -19,8 +19,10 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.Manifest;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
@@ -196,7 +198,8 @@ public class MainActivity extends AppCompatActivity {
         // Tạo Intent để mở MainActivity khi nhấn vào thông báo
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
         builder.setContentIntent(pendingIntent);
 
         // Hiển thị thông báo
@@ -211,8 +214,9 @@ public class MainActivity extends AppCompatActivity {
     private PendingIntent getPendingIntentForNotificationAction(String action) {
         Intent intent = new Intent(this, NotificationReceiver.class);
         intent.setAction(action);
-        return PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
+
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -420,6 +424,14 @@ public class MainActivity extends AppCompatActivity {
         });
         createNotificationChannel();
 
+        // Kiểm tra và yêu cầu quyền gửi thông báo
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 100);
+        } else {
+            // Nếu đã có quyền, khởi động lại thông báo nếu cần
+            // Nếu cần thiết, gọi sendNotification ở đây nếu bài hát đang phát
+        }
+
         bindingView();
         bindingAction();
         startSeekBarUpdateThread();
@@ -437,6 +449,18 @@ public class MainActivity extends AppCompatActivity {
             updateUIWithSong(song);
             musicPlayer.seekTo(progress); // Khôi phục vị trí
             musicPlayer.start(); // Bắt đầu phát từ vị trí đã lưu
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 100) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Quyền đã được cấp, có thể gửi thông báo
+            } else {
+                Toast.makeText(this, "Permission to post notifications denied", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
