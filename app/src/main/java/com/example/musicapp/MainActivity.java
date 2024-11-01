@@ -95,10 +95,19 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     }
 
     private void onBtnPrevSongClick(View view) {
+        if (currentSongIndex == -1) return;
+        if (currentSongIndex == 0) return;
+        currentSongIndex--;
+        Song song = songList.get(currentSongIndex);
+        updateUIWithSong(song);
     }
 
     private void onBtnNextSongClick(View view) {
-
+        if (currentSongIndex == -1) return;
+        if (currentSongIndex == songList.size() - 1) return;
+        currentSongIndex++;
+        Song song = songList.get(currentSongIndex);
+        updateUIWithSong(song);
     }
 
 
