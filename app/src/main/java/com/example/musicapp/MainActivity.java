@@ -2,29 +2,41 @@ package com.example.musicapp;
 
 import android.content.Intent;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
+    private static final String CHAT_FRAGMENT_TAG = "CHAT_FRAGMENT";
+    private static final String CHANNEL_ID = "music_channel";
+
     TextView tvTime, tvDuration, tvTitle, tvArtist;
     SeekBar seekBarTime, seekBarVolume;
     Button btnPlay, btnDownVolume, btnUpVolume, btnMain, btnListMusic;
     private ListMusicFragment listMusicFragment;
+    private ChatFragment chatFragment;
+    private ImageView chatBubble;
     private boolean isListMusicVisible = false;
     MediaPlayer musicPlayer;
     private Song currentSong;
@@ -43,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnUpVolume = findViewById(R.id.btnUpVolume);
         btnMain = findViewById(R.id.btnMain);
         btnListMusic = findViewById(R.id.btnListMusic);
+        chatBubble = findViewById(R.id.chat_bubble);
         main = findViewById(R.id.main);
     }
 
@@ -53,8 +66,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnUpVolume.setOnClickListener(this::onBtnVolumeUpClick);
         btnMain.setOnClickListener(this::onBtnMainClick);
         btnListMusic.setOnClickListener(this::onBtnListMusicClick);
+        chatBubble.setOnClickListener(this::onBtnChatBubbleClick);
         main.setOnClickListener(this::onConstraintLayoutMainClick);
     }
+
+    private void onBtnChatBubbleClick(View view) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment chatFragment = fragmentManager.findFragmentByTag(CHAT_FRAGMENT_TAG);
+
+        if (chatFragment != null && chatFragment.isVisible()) {
+            fragmentManager.beginTransaction()
+                    .setCustomAnimations(R.anim.scale_in, R.anim.scale_out) // Set animations for popping
+                    .remove(chatFragment)
+                    .commit();
+        } else {
+            // Create a new instance of ChatFragment
+            Fragment newChatFragment = new ChatFragment();
+            fragmentManager.beginTransaction()
+                    .setCustomAnimations(R.anim.scale_in, R.anim.scale_out) // Set animations for adding
+                    .replace(R.id.fragment_container, newChatFragment, CHAT_FRAGMENT_TAG)
+                    .addToBackStack(null)
+                    .commit();
+        }
+    }
+
 
     private void onConstraintLayoutMainClick(View view) {
         if (isListMusicVisible && listMusicFragment != null) {
@@ -133,12 +168,72 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (musicPlayer.isPlaying()) {
                 musicPlayer.pause();
                 btnPlay.setBackgroundResource(R.drawable.ic_button_play);
+                sendNotification(tvTitle.getText().toString(), tvArtist.getText().toString(), "Paused");
             } else {
                 musicPlayer.start();
                 btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
+                sendNotification(tvTitle.getText().toString(), tvArtist.getText().toString(), "Playing");
             }
         }
     }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel serviceChannel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Music Player Channel", // Channel name
+                    NotificationManager.IMPORTANCE_DEFAULT // Importance level
+            );
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) {
+                manager.createNotificationChannel(serviceChannel);
+            }
+        }
+    }
+
+    void sendNotification(String title, String artist, String status) {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_music_player)
+                .setContentTitle(title)
+                .setContentText("Artist: " + artist + "\nStatus: " + status)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(false)
+                .addAction(
+                        musicPlayer.isPlaying() ? R.drawable.ic_button_pause : R.drawable.ic_button_play,
+                        musicPlayer.isPlaying() ? "Pause" : "Play",
+                        getPendingIntentForNotificationAction("TOGGLE_PLAY_PAUSE")
+                );
+
+        // Tạo Intent để mở MainActivity khi nhấn vào thông báo
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(pendingIntent);
+
+        // Hiển thị thông báo
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        notificationManager.notify(1, builder.build());
+    }
+
+    // Phương thức để tạo PendingIntent cho các hành động trong thông báo
+    private PendingIntent getPendingIntentForNotificationAction(String action) {
+        Intent intent = new Intent(this, NotificationReceiver.class);
+        intent.setAction(action);
+        return PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if ("ACTION_TOGGLE_PLAY_PAUSE".equals(intent.getAction())) {
+                onBtnPlayClick(null); // Gọi phương thức để phát/tạm dừng nhạc
+            }
+        }
+    };
+
 
     // Phương thức xử lý nút tăng âm lượng
     private void onBtnVolumeUpClick(View view) {
@@ -276,6 +371,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, new IntentFilter("ACTION_TOGGLE_PLAY_PAUSE"));
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -283,6 +379,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        createNotificationChannel();
 
         bindingView();
         bindingAction();
@@ -305,5 +402,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View view) {
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
     }
 }
