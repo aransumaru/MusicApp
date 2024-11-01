@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.os.Build;
@@ -143,13 +144,13 @@ public class MainActivity extends AppCompatActivity {
             if (musicPlayer.isPlaying()) {
                 musicPlayer.pause();
                 startSeekBarUpdateThread();
-                btnPlay.setBackgroundResource(R.drawable.ic_button_play);
                 sendNotification(tvTitle.getText().toString(), tvArtist.getText().toString(), "Paused");
+                btnPlay.setBackgroundResource(R.drawable.ic_button_play);
             } else {
                 musicPlayer.start();
                 startSeekBarUpdateThread();
-                btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
                 sendNotification(tvTitle.getText().toString(), tvArtist.getText().toString(), "Playing");
+                btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
             }
         }
     }
@@ -169,6 +170,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void sendNotification(String title, String artist, String status) {
+        // Lưu thông tin bài hát vào SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("MusicApp", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("currentSongTitle", title);
+        editor.putString("currentSongArtist", artist);
+        editor.putInt("currentSongProgress", musicPlayer.getCurrentPosition());
+        editor.putString("currentSongPath", currentSong.getPath()); // Lưu đường dẫn bài hát
+        editor.apply();
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_music_player)
                 .setContentTitle(title)
@@ -411,6 +421,21 @@ public class MainActivity extends AppCompatActivity {
         bindingView();
         bindingAction();
         startSeekBarUpdateThread();
+
+        // Khôi phục trạng thái bài hát
+        SharedPreferences prefs = getSharedPreferences("MusicApp", MODE_PRIVATE);
+        String title = prefs.getString("currentSongTitle", null);
+        String artist = prefs.getString("currentSongArtist", null);
+        int progress = prefs.getInt("currentSongProgress", 0);
+        String path = prefs.getString("currentSongPath", null); // Lấy đường dẫn bài hát
+
+        if (title != null && path != null) {
+            // Tạo đối tượng Song từ dữ liệu đã lưu
+            Song song = new Song(title, artist, path);
+            updateUIWithSong(song);
+            musicPlayer.seekTo(progress); // Khôi phục vị trí
+            musicPlayer.start(); // Bắt đầu phát từ vị trí đã lưu
+        }
     }
 
     @Override
