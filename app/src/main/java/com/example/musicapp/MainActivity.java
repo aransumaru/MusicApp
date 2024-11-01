@@ -34,21 +34,19 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity {
 
     private static final String CHAT_FRAGMENT_TAG = "CHAT_FRAGMENT";
     private static final String CHANNEL_ID = "music_channel";
+    private static final String LIST_MUSIC_FRAGMENT_TAG = "LIST_MUSIC_FRAGMENT";
 
     TextView tvTime, tvDuration, tvTitle, tvArtist;
     SeekBar seekBarTime, seekBarVolume;
-    Button btnPlay, btnDownVolume, btnUpVolume, btnMain, btnListMusic;
-    private ListMusicFragment listMusicFragment;
-    private ChatFragment chatFragment;
+    Button btnPlay, btnDownVolume, btnUpVolume, btnListMusic;
     private ImageView chatBubble;
-    private boolean isListMusicVisible = false;
     MediaPlayer musicPlayer;
     private Song currentSong;
-    ConstraintLayout main;
+    ConstraintLayout mainLayout;
 
     // Phương thức bindingView
     private void bindingView() {
@@ -61,10 +59,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnPlay = findViewById(R.id.btnPlay);
         btnDownVolume = findViewById(R.id.btnDownVolume);
         btnUpVolume = findViewById(R.id.btnUpVolume);
-        btnMain = findViewById(R.id.btnMain);
         btnListMusic = findViewById(R.id.btnListMusic);
         chatBubble = findViewById(R.id.chat_bubble);
-        main = findViewById(R.id.main);
+        mainLayout = findViewById(R.id.main);
     }
 
     // Phương thức bindingAction
@@ -72,42 +69,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnPlay.setOnClickListener(this::onBtnPlayClick);
         btnDownVolume.setOnClickListener(this::onBtnVolumeDownClick);
         btnUpVolume.setOnClickListener(this::onBtnVolumeUpClick);
-        btnMain.setOnClickListener(this::onBtnMainClick);
         btnListMusic.setOnClickListener(this::onBtnListMusicClick);
         chatBubble.setOnClickListener(this::onBtnChatBubbleClick);
-        main.setOnClickListener(this::onConstraintLayoutMainClick);
+        mainLayout.setOnClickListener(this::onConstraintLayoutMainClick);
     }
 
-    private void onBtnChatBubbleClick(View view) {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        Fragment chatFragment = fragmentManager.findFragmentByTag(CHAT_FRAGMENT_TAG);
-
-        if (chatFragment != null && chatFragment.isVisible()) {
-            fragmentManager.beginTransaction()
-                    .setCustomAnimations(R.anim.scale_in, R.anim.scale_out) // Set animations for popping
-                    .remove(chatFragment)
-                    .commit();
-        } else {
-            // Create a new instance of ChatFragment
-            Fragment newChatFragment = new ChatFragment();
-            fragmentManager.beginTransaction()
-                    .setCustomAnimations(R.anim.scale_in, R.anim.scale_out) // Set animations for adding
-                    .replace(R.id.fragment_container, newChatFragment, CHAT_FRAGMENT_TAG)
-                    .addToBackStack(null)
-                    .commit();
-        }
-    }
-
-
-    private void onConstraintLayoutMainClick(View view) {
-        if (isListMusicVisible && listMusicFragment != null) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .hide(listMusicFragment)
-                    .commit();
-            isListMusicVisible = false;
-        }
-    }
 
     public Song getCurrentSong() {
         return currentSong; // Trả về bài hát hiện tại
@@ -176,10 +142,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (musicPlayer != null) {
             if (musicPlayer.isPlaying()) {
                 musicPlayer.pause();
+                startSeekBarUpdateThread();
                 btnPlay.setBackgroundResource(R.drawable.ic_button_play);
                 sendNotification(tvTitle.getText().toString(), tvArtist.getText().toString(), "Paused");
             } else {
                 musicPlayer.start();
+                startSeekBarUpdateThread();
                 btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
                 sendNotification(tvTitle.getText().toString(), tvArtist.getText().toString(), "Playing");
             }
@@ -261,31 +229,69 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     // Phương thức xử lý nút Main
-    private void onBtnMainClick(View view) {
-        if (isListMusicVisible && listMusicFragment != null) {
-            getSupportFragmentManager()
-                    .beginTransaction()
+    private void onConstraintLayoutMainClick(View view) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment chatFragment = fragmentManager.findFragmentByTag(CHAT_FRAGMENT_TAG);
+        Fragment listMusicFragment = fragmentManager.findFragmentByTag(LIST_MUSIC_FRAGMENT_TAG);
+
+        if (listMusicFragment != null && listMusicFragment.isVisible()) {
+            fragmentManager.beginTransaction()
+                    .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_right)
                     .hide(listMusicFragment)
                     .commit();
-            isListMusicVisible = false;
+        }
+        if (chatFragment != null && chatFragment.isVisible()) {
+            fragmentManager.beginTransaction()
+                    .setCustomAnimations(R.anim.scale_in, R.anim.scale_out) // Set animations for popping
+                    .remove(chatFragment)
+                    .commit();
         }
     }
 
     // Phương thức xử lý nút danh sách nhạc
     private void onBtnListMusicClick(View view) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment listMusicFragment = fragmentManager.findFragmentByTag(LIST_MUSIC_FRAGMENT_TAG);
         if (listMusicFragment == null) {
             listMusicFragment = new ListMusicFragment();
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .add(R.id.fragment_container, listMusicFragment)
+            fragmentManager.beginTransaction()
+                    .setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_left)
+                    .replace(R.id.fragment_container, listMusicFragment, LIST_MUSIC_FRAGMENT_TAG)
+                    .addToBackStack(null)
+                    .commit();
+        } else if (!listMusicFragment.isVisible()) {
+            fragmentManager.beginTransaction()
+                    .setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_left)
+                    .show(listMusicFragment)
+                    .commit();
+        } else {
+            fragmentManager.beginTransaction()
+                    .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_right)
+                    .hide(listMusicFragment)
                     .commit();
         }
-        getSupportFragmentManager()
-                .beginTransaction()
-                .show(listMusicFragment)
-                .commit();
-        isListMusicVisible = true;
     }
+
+    private void onBtnChatBubbleClick(View view) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment chatFragment = fragmentManager.findFragmentByTag(CHAT_FRAGMENT_TAG);
+
+        if (chatFragment != null && chatFragment.isVisible()) {
+            fragmentManager.beginTransaction()
+                    .setCustomAnimations(R.anim.scale_in, R.anim.scale_out) // Set animations for popping
+                    .remove(chatFragment)
+                    .commit();
+        } else {
+            // Create a new instance of ChatFragment
+            Fragment newChatFragment = new ChatFragment();
+            fragmentManager.beginTransaction()
+                    .setCustomAnimations(R.anim.scale_in, R.anim.scale_out) // Set animations for adding
+                    .replace(R.id.fragment_container, newChatFragment, CHAT_FRAGMENT_TAG)
+                    .addToBackStack(null)
+                    .commit();
+        }
+    }
+
 
     // Phương thức thiết lập SeekBar
     private void setupSeekBar() {
@@ -320,10 +326,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
 
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
         });
     }
 
@@ -360,7 +368,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }).start();
     }
-
 
 
     // Phương thức chuyển đổi milliseconds thành String
@@ -403,13 +410,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         startSeekBarUpdateThread();
     }
+
     @Override
     protected void onPause() {
         super.onPause();
-
-    }
-    @Override
-    public void onClick(View view) {
 
     }
 

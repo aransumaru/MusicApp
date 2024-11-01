@@ -142,7 +142,6 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-
         android:layout_marginTop="68dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -150,28 +149,28 @@
         app:layout_constraintTop_toBottomOf="@+id/relativeLayout3">
 
         <Button
-            android:id="@+id/btnMain"
+            android:id="@+id/btnListMusic"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="40dp"
             android:backgroundTint="#07FFFFFF"
-            android:text="Trang Chủ"
+            android:text="Danh Sách"
+            android:layout_centerHorizontal="true"
             app:cornerRadius="4dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <Button
-            android:id="@+id/btnListMusic"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="220dp"
-            android:backgroundTint="#07FFFFFF"
-            android:text="Danh Sách"
-            app:cornerRadius="4dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+        <ImageView
+            android:id="@+id/chat_bubble"
+            android:layout_height="50dp"
+            android:layout_width="50dp"
+            android:background="@drawable/rounded_bubble_background"
+            android:contentDescription="Chat Bubble"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="10dp"
+            android:elevation="8dp"
+            android:padding="10dp"
+            android:src="@drawable/ic_chat_bubble" />
 
     </RelativeLayout>
 
@@ -187,22 +186,5 @@
         app:layout_constraintHorizontal_bias="0.567"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/chat_bubble"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_margin="16dp"
-        android:background="@drawable/rounded_bubble_background"
-        android:contentDescription="Chat Bubble"
-        android:elevation="8dp"
-        android:padding="10dp"
-        android:src="@drawable/ic_chat_bubble"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
