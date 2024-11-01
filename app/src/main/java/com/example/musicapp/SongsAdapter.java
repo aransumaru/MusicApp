@@ -1,6 +1,8 @@
 package com.example.musicapp;
 
+import android.content.SharedPreferences;
 import android.util.Log;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,6 +62,15 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
                 if (currentSong == null || !currentSong.getPath().equals(song.getPath())) {
                     mainActivity.stopMusic();
                     mainActivity.updateUIWithSong(song);
+                    // Lưu thông tin bài hát vào SharedPreferences
+                    SharedPreferences prefs = mainActivity.getSharedPreferences("MusicApp", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putString("currentSongTitle", song.getTitle());
+                    editor.putString("currentSongArtist", song.getArtist());
+                    editor.putInt("currentSongProgress", 0); // Đặt tiến trình về 0 khi chọn bài mới
+                    editor.putString("currentSongPath", song.getPath()); // Lưu đường dẫn bài hát
+                    editor.apply();
+
                     String message = "Đã chọn bài hát " + song.getTitle();
                     Toast.makeText(mainActivity, message, Toast.LENGTH_SHORT).show();
                 } else {
