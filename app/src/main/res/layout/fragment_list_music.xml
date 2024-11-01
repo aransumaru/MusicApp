@@ -19,24 +19,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <EditText
-            android:id="@+id/edtSearch"
-            android:layout_width="276dp"
-            android:layout_height="match_parent"
-            android:layout_marginRight="-44dp"
-            android:background="#464281"
-            android:backgroundTint="#14FFFFFF"
-            android:hint="Tìm Kiếm"
-            android:paddingStart="20dp"
-            android:textColorHint="#77FFFFFF"
-            android:textSize="18sp" />
-
-        <Button
+        <SearchView
             android:id="@+id/btnSearch"
-            android:layout_width="50dp"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="51dp"
-            android:background="@drawable/ic_button_search" />
+            android:queryBackground="@android:color/transparent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:iconifiedByDefault="false"
+            android:queryHint="Tìm kiếm"
+            android:background="#464281"
+            android:backgroundTint="#14FFFFFF" />
 
     </LinearLayout>
 
@@ -51,5 +42,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/layout1"
         app:layout_constraintVertical_bias="0.895" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

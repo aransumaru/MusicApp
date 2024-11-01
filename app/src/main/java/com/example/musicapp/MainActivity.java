@@ -160,8 +160,9 @@ public class MainActivity extends AppCompatActivity {
             NotificationChannel serviceChannel = new NotificationChannel(
                     CHANNEL_ID,
                     "Music Player Channel", // Channel name
-                    NotificationManager.IMPORTANCE_DEFAULT // Importance level
+                    NotificationManager.IMPORTANCE_LOW // Importance level
             );
+            serviceChannel.setSound(null, null);
             NotificationManager manager = getSystemService(NotificationManager.class);
             if (manager != null) {
                 manager.createNotificationChannel(serviceChannel);
@@ -183,7 +184,8 @@ public class MainActivity extends AppCompatActivity {
                 .setSmallIcon(R.drawable.ic_music_player)
                 .setContentTitle(title)
                 .setContentText("Artist: " + artist + "\nStatus: " + status)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setSound(null)
                 .setAutoCancel(false)
                 .addAction(
                         musicPlayer.isPlaying() ? R.drawable.ic_button_pause : R.drawable.ic_button_play,
