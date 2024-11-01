@@ -236,14 +236,14 @@ public class MainActivity extends AppCompatActivity {
 
         if (listMusicFragment != null && listMusicFragment.isVisible()) {
             fragmentManager.beginTransaction()
-                    .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_right)
+                    .setCustomAnimations(R.anim.slide_out_left, R.anim.slide_out_right)
                     .hide(listMusicFragment)
                     .commit();
         }
         if (chatFragment != null && chatFragment.isVisible()) {
             fragmentManager.beginTransaction()
-                    .setCustomAnimations(R.anim.scale_in, R.anim.scale_out) // Set animations for popping
-                    .remove(chatFragment)
+                    .setCustomAnimations(R.anim.slide_out_left, R.anim.slide_out_right) // Set animations for popping
+                    .hide(chatFragment)
                     .commit();
         }
     }
@@ -252,22 +252,25 @@ public class MainActivity extends AppCompatActivity {
     private void onBtnListMusicClick(View view) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         Fragment listMusicFragment = fragmentManager.findFragmentByTag(LIST_MUSIC_FRAGMENT_TAG);
+        Fragment chatFragment = fragmentManager.findFragmentByTag(CHAT_FRAGMENT_TAG);
+
+        if (chatFragment != null && chatFragment.isVisible()) {
+            fragmentManager.beginTransaction()
+                    .setCustomAnimations(R.anim.slide_out_left, R.anim.slide_out_right) // Set animations for popping
+                    .hide(chatFragment)
+                    .commit();
+        }
+
         if (listMusicFragment == null) {
             listMusicFragment = new ListMusicFragment();
             fragmentManager.beginTransaction()
                     .setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_left)
-                    .replace(R.id.fragment_container, listMusicFragment, LIST_MUSIC_FRAGMENT_TAG)
-                    .addToBackStack(null)
+                    .add(R.id.fragment_container, listMusicFragment, LIST_MUSIC_FRAGMENT_TAG)
                     .commit();
         } else if (!listMusicFragment.isVisible()) {
             fragmentManager.beginTransaction()
                     .setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_left)
                     .show(listMusicFragment)
-                    .commit();
-        } else {
-            fragmentManager.beginTransaction()
-                    .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_right)
-                    .hide(listMusicFragment)
                     .commit();
         }
     }
@@ -275,21 +278,29 @@ public class MainActivity extends AppCompatActivity {
     private void onBtnChatBubbleClick(View view) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         Fragment chatFragment = fragmentManager.findFragmentByTag(CHAT_FRAGMENT_TAG);
+        Fragment listMusicFragment = fragmentManager.findFragmentByTag(LIST_MUSIC_FRAGMENT_TAG);
 
-        if (chatFragment != null && chatFragment.isVisible()) {
+        if (listMusicFragment != null && listMusicFragment.isVisible()) {
             fragmentManager.beginTransaction()
-                    .setCustomAnimations(R.anim.scale_in, R.anim.scale_out) // Set animations for popping
-                    .remove(chatFragment)
+                    .setCustomAnimations(R.anim.slide_out_left, R.anim.slide_out_right)
+                    .hide(listMusicFragment)
                     .commit();
-        } else {
+        }
+
+        if (chatFragment == null) {
             // Create a new instance of ChatFragment
             Fragment newChatFragment = new ChatFragment();
             fragmentManager.beginTransaction()
-                    .setCustomAnimations(R.anim.scale_in, R.anim.scale_out) // Set animations for adding
-                    .replace(R.id.fragment_container, newChatFragment, CHAT_FRAGMENT_TAG)
-                    .addToBackStack(null)
+                    .setCustomAnimations(R.anim.slide_in_left, R.anim.slide_in_right) // Set animations for adding
+                    .add(R.id.fragment_container, newChatFragment, CHAT_FRAGMENT_TAG)
+                    .commit();
+        } else if (!chatFragment.isVisible()) {
+            fragmentManager.beginTransaction()
+                    .setCustomAnimations(R.anim.slide_in_left, R.anim.slide_in_right)
+                    .show(chatFragment)
                     .commit();
         }
+
     }
 
 
