@@ -142,6 +142,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 musicPlayer.prepare();
                 musicPlayer.setLooping(true);
                 musicPlayer.start();
+                sendNotification(tvTitle.getText().toString(), tvArtist.getText().toString(), "Playing");
                 btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
                 String duration = millisecondsToString(musicPlayer.getDuration());
                 tvDuration.setText(duration);
