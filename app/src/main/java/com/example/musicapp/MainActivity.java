@@ -1,13 +1,6 @@
 package com.example.musicapp;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
@@ -47,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean isListMusicVisible = false;
     MediaPlayer musicPlayer;
     private Song currentSong;
+    ConstraintLayout main;
 
     // Phương thức bindingView
     private void bindingView() {
@@ -62,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnMain = findViewById(R.id.btnMain);
         btnListMusic = findViewById(R.id.btnListMusic);
         chatBubble = findViewById(R.id.chat_bubble);
+        main = findViewById(R.id.main);
     }
 
     // Phương thức bindingAction
@@ -72,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnMain.setOnClickListener(this::onBtnMainClick);
         btnListMusic.setOnClickListener(this::onBtnListMusicClick);
         chatBubble.setOnClickListener(this::onBtnChatBubbleClick);
+        main.setOnClickListener(this::onConstraintLayoutMainClick);
     }
 
     private void onBtnChatBubbleClick(View view) {
@@ -91,6 +87,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     .replace(R.id.fragment_container, newChatFragment, CHAT_FRAGMENT_TAG)
                     .addToBackStack(null)
                     .commit();
+        }
+    }
+
+
+    private void onConstraintLayoutMainClick(View view) {
+        if (isListMusicVisible && listMusicFragment != null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .hide(listMusicFragment)
+                    .commit();
+            isListMusicVisible = false;
         }
     }
 
@@ -127,7 +134,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 musicPlayer.prepare();
                 musicPlayer.setLooping(true);
                 musicPlayer.start();
-                sendNotification(tvTitle.getText().toString(), tvArtist.getText().toString(), "Playing");
                 btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
                 String duration = millisecondsToString(musicPlayer.getDuration());
                 tvDuration.setText(duration);
