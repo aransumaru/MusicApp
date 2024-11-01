@@ -53,7 +53,10 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
 
     //tạo state list song và lưu danh sách từ fragment vào state
     private List<Song> songList = new ArrayList<>();
-    private int currentSongIndex = 0;
+    private int currentSongIndex = -1;
+    public void setCurrentSongIndex(int index) {
+        currentSongIndex = index;
+    }
     @Override
     public void onSongsDataPass(List<Song> songs) {
         songList.clear();
