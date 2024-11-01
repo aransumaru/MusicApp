@@ -458,7 +458,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        stopMusic(); // Ensure music is stopped and resources are released
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
     }
 }
