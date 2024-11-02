@@ -3,6 +3,7 @@ package com.example.musicapp;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,12 +16,24 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.gson.Gson;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class ChatFragment extends Fragment {
     private EditText messageInput;
     private ImageButton sendButton;
     private RecyclerView chatRecyclerView;
     private ChatAdapter chatAdapter;
     private AiService aiService;
+    private Map<String, Object> historyChat;
+    List<Map<String, Object>> contents;
+    Map<String, Object> userPart;
+    Map<String, Object> modelPart;
 
     @Nullable
     @Override
@@ -45,7 +58,8 @@ public class ChatFragment extends Fragment {
                 }
             }
         });
-
+        historyChat = new HashMap<>();
+        contents = new ArrayList<>();
 
         return view;
     }
@@ -66,8 +80,11 @@ public class ChatFragment extends Fragment {
         sendButton.setImageResource(R.drawable.ic_send_disabled);
         sendButton.setEnabled(false);
 
-
-
+        userPart = new HashMap<>();
+        userPart.put("role", "user");
+        userPart.put("parts", Collections.singletonList(Collections.singletonMap("text", message)));
+        contents.add(userPart);
+        historyChat.put("contents", contents);
         // EM CONG CHO AI BOT NHAN TIN DUOI NAY
 
 //        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
@@ -82,7 +99,13 @@ public class ChatFragment extends Fragment {
 
         // Thoi anh lai lam luon
 
-        aiService.Response(message).thenAccept(response -> {
+        aiService.Response(message, historyChat).thenAccept(response -> {
+            modelPart = new HashMap<>();
+            modelPart.put("role", "model");
+            modelPart.put("parts", Collections.singletonList(Collections.singletonMap("text", response)));
+            contents.add(modelPart);
+            historyChat.put("contents", contents);
+
             requireActivity().runOnUiThread(() -> {
                 chatAdapter.addMessage(new ChatMessage(response, true));
                 chatRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
