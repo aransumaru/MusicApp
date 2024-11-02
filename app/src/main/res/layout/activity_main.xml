@@ -10,20 +10,6 @@
     android:background="@drawable/background"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/btnListMusic"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/baseline_search_24"
-        android:backgroundTint="#07FFFFFF"
-        app:cornerRadius="4dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.026"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="361dp"
