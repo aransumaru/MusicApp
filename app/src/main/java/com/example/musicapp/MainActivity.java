@@ -220,13 +220,15 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_music_player)
                 .setContentTitle(title)
-                .setContentText("Artist: " + artist + "\nStatus: " + status)
+                .setContentText("Artist: " + artist)
+                .setContentText("Status: " + status)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setSound(null)
                 .setAutoCancel(false)
                 .setOngoing(true)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .addAction(
-                        musicPlayer.isPlaying() ? R.drawable.ic_button_pause : R.drawable.ic_button_play,
+                        musicPlayer.isPlaying() ? R.drawable.ic_pause : R.drawable.ic_play,
                         musicPlayer.isPlaying() ? "Pause" : "Play",
                         getPendingIntentForNotificationAction("TOGGLE_PLAY_PAUSE")
                 );
