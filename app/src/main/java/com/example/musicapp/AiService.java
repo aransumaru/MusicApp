@@ -16,7 +16,7 @@ import okhttp3.*;
 
 
 public class AiService {
-    private final String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=AIzaSyD6xhKtuyqoqhpL7PBcXvJNt2Xyh5cuX3U";
+    private final String url = "https://generativelanguage.googleapis.com/v1beta/tunedModels/huma-65lzdeofoycs:generateContent?key=AIzaSyD6xhKtuyqoqhpL7PBcXvJNt2Xyh5cuX3U";
 
     public CompletableFuture<String> Response(String msg, Map<String, Object> historyChat) {
         CompletableFuture<String> future = new CompletableFuture();
