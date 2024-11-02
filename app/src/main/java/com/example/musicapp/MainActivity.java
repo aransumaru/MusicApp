@@ -13,6 +13,8 @@ import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -29,6 +31,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.graphics.Insets;
+import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
@@ -47,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
 
     TextView tvTime, tvDuration, tvTitle, tvArtist;
     SeekBar seekBarTime, seekBarVolume;
-    Button btnPlay, btnDownVolume, btnUpVolume, btnListMusic, btnNextSong, btnPrevSong;
+    Button btnPlay, btnDownVolume, btnUpVolume, btnNextSong, btnPrevSong;
     private ImageView chatBubble;
     MediaPlayer musicPlayer;
     private Song currentSong;
@@ -77,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         btnPlay = findViewById(R.id.btnPlay);
         btnDownVolume = findViewById(R.id.btnDownVolume);
         btnUpVolume = findViewById(R.id.btnUpVolume);
-        btnListMusic = findViewById(R.id.btnListMusic);
         chatBubble = findViewById(R.id.chat_bubble);
         mainLayout = findViewById(R.id.main);
         btnNextSong = findViewById(R.id.btnNextSong);
@@ -89,7 +91,6 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         btnPlay.setOnClickListener(this::onBtnPlayClick);
         btnDownVolume.setOnClickListener(this::onBtnVolumeDownClick);
         btnUpVolume.setOnClickListener(this::onBtnVolumeUpClick);
-        btnListMusic.setOnClickListener(this::onBtnListMusicClick);
         chatBubble.setOnClickListener(this::onBtnChatBubbleClick);
         mainLayout.setOnClickListener(this::onConstraintLayoutMainClick);
         btnNextSong.setOnClickListener(this::onBtnNextSongClick);
@@ -303,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     }
 
     // Phương thức xử lý nút danh sách nhạc
-    private void onBtnListMusicClick(View view) {
+    private void onBtnListMusicClick() {
         FragmentManager fragmentManager = getSupportFragmentManager();
         Fragment listMusicFragment = fragmentManager.findFragmentByTag(LIST_MUSIC_FRAGMENT_TAG);
         Fragment chatFragment = fragmentManager.findFragmentByTag(CHAT_FRAGMENT_TAG);
@@ -529,5 +530,16 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
             musicPlayer = null;
         }
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.option_menu, menu);
+        MenuItem searchItem = menu.findItem(R.id.opt_search);
+        searchItem.setOnMenuItemClickListener(item -> {
+            onBtnListMusicClick();
+            return true;
+        });
+
+        return super.onCreateOptionsMenu(menu);
     }
 }
