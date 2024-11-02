@@ -92,7 +92,7 @@ public class ChatFragment extends Fragment {
         }).exceptionally(e -> {
             e.printStackTrace();
             requireActivity().runOnUiThread(() -> {
-                chatAdapter.addMessage(new ChatMessage("Error: " + e.getMessage(), true));
+                chatAdapter.addMessage(new ChatMessage("Đã đạt đến giới hạn tin nhắn. Vui lòng thử lại sau 2 phút.", true));
                 chatRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
                 sendButton.setImageResource(R.drawable.ic_send);
                 sendButton.setEnabled(true);
