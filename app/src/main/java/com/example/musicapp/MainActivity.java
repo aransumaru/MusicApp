@@ -218,7 +218,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         editor.apply();
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_music_player)
+                .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(title)
                 .setContentText("Artist: " + artist)
                 .setContentText("Status: " + status)
