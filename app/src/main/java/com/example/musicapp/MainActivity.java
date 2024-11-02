@@ -36,8 +36,10 @@ import androidx.fragment.app.FragmentManager;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ListMusicFragment.OnSongsDataPass {
 
     private static final String CHAT_FRAGMENT_TAG = "CHAT_FRAGMENT";
     private static final String CHANNEL_ID = "music_channel";
@@ -45,11 +47,24 @@ public class MainActivity extends AppCompatActivity {
 
     TextView tvTime, tvDuration, tvTitle, tvArtist;
     SeekBar seekBarTime, seekBarVolume;
-    Button btnPlay, btnDownVolume, btnUpVolume, btnListMusic;
+    Button btnPlay, btnDownVolume, btnUpVolume, btnListMusic, btnNextSong, btnPrevSong;
     private ImageView chatBubble;
     MediaPlayer musicPlayer;
     private Song currentSong;
     ConstraintLayout mainLayout;
+
+    //tạo state list song và lưu danh sách từ fragment vào state
+    private List<Song> songList = new ArrayList<>();
+    private int currentSongIndex = -1;
+    public void setCurrentSongIndex(int index) {
+        currentSongIndex = index;
+    }
+    @Override
+    public void onSongsDataPass(List<Song> songs) {
+        songList.clear();
+        songList.addAll(songs);
+    }
+
 
     // Phương thức bindingView
     private void bindingView() {
@@ -65,6 +80,8 @@ public class MainActivity extends AppCompatActivity {
         btnListMusic = findViewById(R.id.btnListMusic);
         chatBubble = findViewById(R.id.chat_bubble);
         mainLayout = findViewById(R.id.main);
+        btnNextSong = findViewById(R.id.btnNextSong);
+        btnPrevSong = findViewById(R.id.btnPrevSong);
     }
 
     // Phương thức bindingAction
@@ -75,6 +92,24 @@ public class MainActivity extends AppCompatActivity {
         btnListMusic.setOnClickListener(this::onBtnListMusicClick);
         chatBubble.setOnClickListener(this::onBtnChatBubbleClick);
         mainLayout.setOnClickListener(this::onConstraintLayoutMainClick);
+        btnNextSong.setOnClickListener(this::onBtnNextSongClick);
+        btnPrevSong.setOnClickListener(this::onBtnPrevSongClick);
+    }
+
+    private void onBtnPrevSongClick(View view) {
+        if (currentSongIndex == -1) return;
+        if (currentSongIndex == 0) return;
+        currentSongIndex--;
+        Song song = songList.get(currentSongIndex);
+        updateUIWithSong(song);
+    }
+
+    private void onBtnNextSongClick(View view) {
+        if (currentSongIndex == -1) return;
+        if (currentSongIndex == songList.size() - 1) return;
+        currentSongIndex++;
+        Song song = songList.get(currentSongIndex);
+        updateUIWithSong(song);
     }
 
 

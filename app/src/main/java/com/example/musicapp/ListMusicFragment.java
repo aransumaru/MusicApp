@@ -1,6 +1,7 @@
 package com.example.musicapp;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -38,6 +39,21 @@ public class ListMusicFragment extends Fragment {
     private RecyclerView rcv;
     private SearchView  btnSearch;
 
+    //interface callback để chuyển state list song qua MainActitity (xử lý chuyển bài bằng núi next và prev)
+    private OnSongsDataPass dataPasser;
+    public interface OnSongsDataPass {
+        void onSongsDataPass(List<Song> songs);
+    }
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (context instanceof OnSongsDataPass) {
+            dataPasser = (OnSongsDataPass) context;
+        } else {
+            throw new RuntimeException(context.toString() + " must implement OnSongsDataPass");
+        }
+    }
+
     private void bindingView(View view) {
         rcv = view.findViewById(R.id.rcv);
         btnSearch = view.findViewById(R.id.btnSearch);
@@ -66,6 +82,7 @@ public class ListMusicFragment extends Fragment {
         if (title.trim() == "") {
             _songService.getSongs().thenAccept(songs -> {
                 getActivity().runOnUiThread(() -> {
+                    dataPasser.onSongsDataPass(songs);
                     adapter.data.clear();
                     adapter.data.addAll(songs);
                     adapter.notifyDataSetChanged();
@@ -74,6 +91,7 @@ public class ListMusicFragment extends Fragment {
         } else {
             _songService.search(title.trim()).thenAccept(songs -> {
                 getActivity().runOnUiThread(() -> {
+                    dataPasser.onSongsDataPass(songs);
                     adapter.data.clear();
                     adapter.data.addAll(songs);
                     adapter.notifyDataSetChanged();

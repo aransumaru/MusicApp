@@ -62,6 +62,8 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
                 if (currentSong == null || !currentSong.getPath().equals(song.getPath())) {
                     mainActivity.stopMusic();
                     mainActivity.updateUIWithSong(song);
+                    //update current song index
+                    mainActivity.setCurrentSongIndex(position);
                     // Lưu thông tin bài hát vào SharedPreferences
                     SharedPreferences prefs = mainActivity.getSharedPreferences("MusicApp", Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = prefs.edit();
