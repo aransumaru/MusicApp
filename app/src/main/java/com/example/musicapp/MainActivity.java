@@ -12,12 +12,12 @@ import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,10 +28,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.graphics.Insets;
-import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
@@ -45,23 +43,25 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements ListMusicFragment.OnSongsDataPass {
 
     private static final String CHAT_FRAGMENT_TAG = "CHAT_FRAGMENT";
-    private static final String CHANNEL_ID = "music_channel";
     private static final String LIST_MUSIC_FRAGMENT_TAG = "LIST_MUSIC_FRAGMENT";
 
     TextView tvTime, tvDuration, tvTitle, tvArtist;
     SeekBar seekBarTime, seekBarVolume;
     Button btnPlay, btnDownVolume, btnUpVolume, btnNextSong, btnPrevSong, btnLoop, btnRandom;
-    private ImageView chatBubble;
-    MediaPlayer musicPlayer;
+    public MediaPlayer mediaPlayer;
     private Song currentSong;
     ConstraintLayout mainLayout;
     private boolean isLooping = false;
     //tạo state list song và lưu danh sách từ fragment vào state
     private List<Song> songList = new ArrayList<>();
     private int currentSongIndex = -1;
+    private MediaNotificationHelper notificationHelper;
+    private MediaSessionCompat mediaSession;
+
     public void setCurrentSongIndex(int index) {
         currentSongIndex = index;
     }
+
     @Override
     public void onSongsDataPass(List<Song> songs) {
         songList.clear();
@@ -110,10 +110,10 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     private void onBtnLoop(View view) {
         isLooping = !isLooping;
         if (isLooping) {
-            musicPlayer.setLooping(true);
+            mediaPlayer.setLooping(true);
             btnLoop.setBackgroundResource(R.drawable.ic_button_loop_enabled);
         } else {
-            musicPlayer.setLooping(false);
+            mediaPlayer.setLooping(false);
             btnLoop.setBackgroundResource(R.drawable.ic_button_loop);
         }
     }
@@ -134,7 +134,6 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         updateUIWithSong(song);
     }
 
-
     public Song getCurrentSong() {
         return currentSong; // Trả về bài hát hiện tại
     }
@@ -146,9 +145,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
                 Log.d("MusicPlayer", "Song is already playing: " + song.getTitle());
                 return;
             }
-
             currentSong = song;
-
             tvTitle.setText(song.getTitle());
             tvArtist.setText(song.getArtist());
             setupMediaPlayer(song.getPath());
@@ -156,24 +153,26 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     }
 
 
+
     // Phương thức thiết lập MediaPlayer
     private void setupMediaPlayer(String path) {
-        if (musicPlayer != null) {
-            stopMusic(); // Dừng nhạc nếu đang phát
+        if (mediaPlayer != null) {
+            onBtnPlayClick(null); // Dừng nhạc nếu đang phát
         }
-        musicPlayer = new MediaPlayer();
+        mediaPlayer = new MediaPlayer();
+        mediaSession = new MediaSessionCompat(this, "MediaSessionTag");
+        notificationHelper = new MediaNotificationHelper(this, mediaSession, mediaPlayer);
         if (path != null) {
             try {
-                musicPlayer.setDataSource(path);
-                musicPlayer.prepare();
-                musicPlayer.start();
-                musicPlayer.setLooping(isLooping);
-                sendNotification(tvTitle.getText().toString(), tvArtist.getText().toString(), "Playing");
+                mediaPlayer.setDataSource(path);
+                mediaPlayer.prepare();
+                mediaPlayer.start();
+                mediaPlayer.setLooping(isLooping);
+                notificationHelper.showMediaNotification(tvTitle.getText().toString(), tvArtist.getText().toString());
                 btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
-                String duration = millisecondsToString(musicPlayer.getDuration());
+                String duration = millisecondsToString(mediaPlayer.getDuration());
                 tvDuration.setText(duration);
-                musicPlayer.setOnCompletionListener(mp -> onBtnNextSongClick(null));
-
+                mediaPlayer.setOnCompletionListener(mp -> onBtnNextSongClick(null));
                 setupSeekBar();
                 startSeekBarUpdateThread();
             } catch (IOException e) {
@@ -183,123 +182,35 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         }
     }
 
-
-    // Phương thức dừng nhạc
-    void stopMusic() {
-        if (musicPlayer != null) {
-            if (musicPlayer.isPlaying()) {
-                musicPlayer.stop();
-                musicPlayer.release();
-                musicPlayer = null;
-                Log.d("MusicPlayer", "Music stopped.");
-                btnPlay.setBackgroundResource(R.drawable.ic_button_play);
-            }
-        }
-    }
-
     // Phương thức xử lý nút Play
-    private void onBtnPlayClick(View view) {
-        if (musicPlayer != null) {
-            if (musicPlayer.isPlaying()) {
-                musicPlayer.pause();
+    public void onBtnPlayClick(View view) {
+        if (mediaPlayer != null) {
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.pause();
                 startSeekBarUpdateThread();
-                sendNotification(tvTitle.getText().toString(), tvArtist.getText().toString(), "Paused");
+                notificationHelper.showMediaNotification(tvTitle.getText().toString(), tvArtist.getText().toString());
                 btnPlay.setBackgroundResource(R.drawable.ic_button_play);
             } else {
-                musicPlayer.start();
+                mediaPlayer.start();
                 startSeekBarUpdateThread();
-                sendNotification(tvTitle.getText().toString(), tvArtist.getText().toString(), "Playing");
+                notificationHelper.showMediaNotification(tvTitle.getText().toString(), tvArtist.getText().toString());
                 btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
             }
         }
     }
 
-    private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel serviceChannel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Music Player Channel", // Channel name
-                    NotificationManager.IMPORTANCE_DEFAULT // Importance level
-            );
-            serviceChannel.setSound(null, null);
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            if (manager != null) {
-                manager.createNotificationChannel(serviceChannel);
-            }
-        }
-    }
-
-    void sendNotification(String title, String artist, String status) {
-        // Lưu thông tin bài hát vào SharedPreferences
-        SharedPreferences prefs = getSharedPreferences("MusicApp", MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("currentSongTitle", title);
-        editor.putString("currentSongArtist", artist);
-        editor.putInt("currentSongProgress", musicPlayer.getCurrentPosition());
-        editor.putString("currentSongPath", currentSong.getPath()); // Lưu đường dẫn bài hát
-        editor.apply();
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(title)
-                .setContentText("Artist: " + artist)
-                .setContentText("Status: " + status)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setSound(null)
-                .setAutoCancel(false)
-                .setOngoing(true)
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .addAction(
-                        musicPlayer.isPlaying() ? R.drawable.ic_pause : R.drawable.ic_play,
-                        musicPlayer.isPlaying() ? "Pause" : "Play",
-                        getPendingIntentForNotificationAction("TOGGLE_PLAY_PAUSE")
-                );
-
-        // Tạo Intent để mở MainActivity khi nhấn vào thông báo
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
-        builder.setContentIntent(pendingIntent);
-
-        // Hiển thị thông báo
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        notificationManager.notify(1, builder.build());
-    }
-
-    // Phương thức để tạo PendingIntent cho các hành động trong thông báo
-    private PendingIntent getPendingIntentForNotificationAction(String action) {
-        Intent intent = new Intent(this, NotificationReceiver.class);
-        intent.setAction(action);
-        return PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-    }
-
-
-    private BroadcastReceiver receiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if ("ACTION_TOGGLE_PLAY_PAUSE".equals(intent.getAction())) {
-                onBtnPlayClick(null); // Gọi phương thức để phát/tạm dừng nhạc
-            }
-        }
-    };
-
-
     // Phương thức xử lý nút tăng âm lượng
     private void onBtnVolumeUpClick(View view) {
-        if (musicPlayer != null) {
-            musicPlayer.setVolume(1.0f, 1.0f);
+        if (mediaPlayer != null) {
+            mediaPlayer.setVolume(1.0f, 1.0f);
             seekBarVolume.setProgress(100);
         }
     }
 
     // Phương thức xử lý nút giảm âm lượng
     private void onBtnVolumeDownClick(View view) {
-        if (musicPlayer != null) {
-            musicPlayer.setVolume(0.0f, 0.0f);
+        if (mediaPlayer != null) {
+            mediaPlayer.setVolume(0.0f, 0.0f);
             seekBarVolume.setProgress(0);
         }
     }
@@ -323,6 +234,188 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
                     .commit();
         }
     }
+
+    // Phương thức thiết lập SeekBar
+    private void setupSeekBar() {
+        seekBarTime.setMax(mediaPlayer.getDuration());
+        seekBarTime.setProgress(0);
+        seekBarTime.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean isFromUser) {
+                if (isFromUser && mediaPlayer != null) {
+                    mediaPlayer.seekTo(progress);
+                    seekBar.setProgress(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
+        seekBarVolume.setProgress(50);
+        seekBarVolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean isFromUser) {
+                float volume = progress / 100f;
+                if (mediaPlayer != null) {
+                    mediaPlayer.setVolume(volume, volume);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+    }
+
+
+    // Phương thức khởi động thread cập nhật SeekBar
+    private void startSeekBarUpdateThread() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (mediaPlayer != null) {
+                    if (mediaPlayer.isPlaying()) {
+                        try {
+                            final int current = mediaPlayer.getCurrentPosition();
+                            final int duration = mediaPlayer.getDuration();
+                            Log.d("MusicPlayer", "Current Position: " + current + ", Duration: " + duration);
+
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    tvTime.setText(millisecondsToString(current));
+                                    seekBarTime.setMax(duration);
+                                    seekBarTime.setProgress(current);
+                                }
+                            });
+
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }).start();
+    }
+
+
+    // Phương thức chuyển đổi milliseconds thành String
+    public String millisecondsToString(int time) {
+        String elapsedTime;
+        int minutes = time / 1000 / 60;
+        int seconds = time / 1000 % 60;
+        elapsedTime = minutes + ":";
+        if (seconds < 10) {
+            elapsedTime += "0";
+        }
+        elapsedTime += seconds;
+        return elapsedTime;
+    }
+
+    // Phương thức onCreate
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_main);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+
+        // Register receiver for UI updates
+        LocalBroadcastManager.getInstance(this).registerReceiver(uiUpdateReceiver,
+                new IntentFilter(MediaControlReceiver.ACTION_UPDATE_UI));
+
+
+        bindingView();
+        bindingAction();
+        startSeekBarUpdateThread();
+
+        // Khôi phục trạng thái bài hát
+        SharedPreferences prefs = getSharedPreferences("MusicApp", MODE_PRIVATE);
+        String title = prefs.getString("currentSongTitle", null);
+        String artist = prefs.getString("currentSongArtist", null);
+        int progress = prefs.getInt("currentSongProgress", 0);
+        String path = prefs.getString("currentSongPath", null); // Lấy đường dẫn bài hát
+
+        if (title != null && path != null) {
+            // Tạo đối tượng Song từ dữ liệu đã lưu
+            Song song = new Song(title, artist, path);
+            updateUIWithSong(song);
+            mediaPlayer.seekTo(progress); // Khôi phục vị trí
+            mediaPlayer.start(); // Bắt đầu phát từ vị trí đã lưu
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 100) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Quyền đã được cấp, có thể gửi thông báo
+            } else {
+                Toast.makeText(this, "Permission to post notifications denied", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startSeekBarUpdateThread();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Hủy thông báo nếu ứng dụng bị đóng
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.cancel(1); // Hủy thông báo có ID 1
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+            mediaPlayer = null;
+            mediaSession.release();
+        }
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(uiUpdateReceiver);
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.option_menu, menu);
+        MenuItem searchItem = menu.findItem(R.id.opt_search);
+        MenuItem chatItem = menu.findItem(R.id.opt_chat);
+        searchItem.setOnMenuItemClickListener(item -> {
+            onBtnListMusicClick();
+            return true;
+        });
+        chatItem.setOnMenuItemClickListener(item -> {
+            onBtnChatBubbleClick();
+            return true;
+        });
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
 
     // Phương thức xử lý nút danh sách nhạc
     private void onBtnListMusicClick() {
@@ -379,192 +472,24 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
 
     }
 
+    private final BroadcastReceiver uiUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getStringExtra("action");
+            if (action == null) return;
 
-    // Phương thức thiết lập SeekBar
-    private void setupSeekBar() {
-        seekBarTime.setMax(musicPlayer.getDuration());
-        seekBarTime.setProgress(0);
-        seekBarTime.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean isFromUser) {
-                if (isFromUser && musicPlayer != null) {
-                    musicPlayer.seekTo(progress);
-                    seekBar.setProgress(progress);
-                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
-        });
-
-        seekBarVolume.setProgress(50);
-        seekBarVolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean isFromUser) {
-                float volume = progress / 100f;
-                if (musicPlayer != null) {
-                    musicPlayer.setVolume(volume, volume);
-                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
-        });
-    }
-
-
-    // Phương thức khởi động thread cập nhật SeekBar
-    private void startSeekBarUpdateThread() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (musicPlayer != null) {
-                    if (musicPlayer.isPlaying()) {
-                        try {
-                            final int current = musicPlayer.getCurrentPosition();
-                            final int duration = musicPlayer.getDuration();
-                            Log.d("MusicPlayer", "Current Position: " + current + ", Duration: " + duration);
-
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    tvTime.setText(millisecondsToString(current));
-                                    seekBarTime.setMax(duration);
-                                    seekBarTime.setProgress(current);
-                                }
-                            });
-
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        break;
-                    }
-                }
-            }
-        }).start();
-    }
-
-
-    // Phương thức chuyển đổi milliseconds thành String
-    public String millisecondsToString(int time) {
-        String elapsedTime;
-        int minutes = time / 1000 / 60;
-        int seconds = time / 1000 % 60;
-        elapsedTime = minutes + ":";
-        if (seconds < 10) {
-            elapsedTime += "0";
-        }
-        elapsedTime += seconds;
-        return elapsedTime;
-    }
-
-    // Phương thức onCreate
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, new IntentFilter("ACTION_TOGGLE_PLAY_PAUSE"));
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-        createNotificationChannel();
-
-        // Kiểm tra và yêu cầu quyền gửi thông báo
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 100);
-        } else {
-            // Nếu đã có quyền, khởi động lại thông báo nếu cần
-            // Nếu cần thiết, gọi sendNotification ở đây nếu bài hát đang phát
-        }
-
-        bindingView();
-        bindingAction();
-        startSeekBarUpdateThread();
-
-        // Khôi phục trạng thái bài hát
-        SharedPreferences prefs = getSharedPreferences("MusicApp", MODE_PRIVATE);
-        String title = prefs.getString("currentSongTitle", null);
-        String artist = prefs.getString("currentSongArtist", null);
-        int progress = prefs.getInt("currentSongProgress", 0);
-        String path = prefs.getString("currentSongPath", null); // Lấy đường dẫn bài hát
-
-        if (title != null && path != null) {
-            // Tạo đối tượng Song từ dữ liệu đã lưu
-            Song song = new Song(title, artist, path);
-            updateUIWithSong(song);
-            musicPlayer.seekTo(progress); // Khôi phục vị trí
-            musicPlayer.start(); // Bắt đầu phát từ vị trí đã lưu
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 100) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Quyền đã được cấp, có thể gửi thông báo
-            } else {
-                Toast.makeText(this, "Permission to post notifications denied", Toast.LENGTH_SHORT).show();
+            // Update UI based on action
+            switch (action) {
+                case MediaControlReceiver.ACTION_PLAY_PAUSE:
+                    onBtnPlayClick(null);
+                    break;
+                case MediaControlReceiver.ACTION_NEXT:
+                    onBtnNextSongClick(null);
+                    break;
+                case MediaControlReceiver.ACTION_PREVIOUS:
+                    onBtnPrevSongClick(null);
+                    break;
             }
         }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-//        if (musicPlayer != null && !musicPlayer.isPlaying()) {
-//            musicPlayer.start(); // Bắt đầu lại nếu nhạc đã dừng
-//        }
-        startSeekBarUpdateThread();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // Hủy thông báo nếu ứng dụng bị đóng
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        notificationManager.cancel(1); // Hủy thông báo có ID 1
-        if (musicPlayer != null) {
-            musicPlayer.stop();
-            musicPlayer.release();
-            musicPlayer = null;
-        }
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
-    }
-
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.option_menu, menu);
-        MenuItem searchItem = menu.findItem(R.id.opt_search);
-        MenuItem chatItem = menu.findItem(R.id.opt_chat);
-        searchItem.setOnMenuItemClickListener(item -> {
-            onBtnListMusicClick();
-            return true;
-        });
-        chatItem.setOnMenuItemClickListener(item -> {
-            onBtnChatBubbleClick();
-            return true;
-        });
-
-        return super.onCreateOptionsMenu(menu);
-    }
+    };
 }
