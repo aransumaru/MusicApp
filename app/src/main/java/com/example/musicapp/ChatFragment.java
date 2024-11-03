@@ -31,8 +31,10 @@ public class ChatFragment extends Fragment {
     private ChatAdapter chatAdapter;
     private AiService aiService;
     private Map<String, Object> historyChat;
-    List<Map<String, Object>> contents;
     Map<String, Object> userPart;
+    List<Map<String, Object>> contents;
+    Map<String, Object> systemInstruction;
+    Map<String, Object> generationConfig;
     Map<String, Object> modelPart;
 
     @Nullable
@@ -59,6 +61,17 @@ public class ChatFragment extends Fragment {
             }
         });
         historyChat = new HashMap<>();
+        systemInstruction = new HashMap<>();
+        systemInstruction.put("role", "user");
+        systemInstruction.put("parts", Collections.singletonList(Collections.singletonMap("text", aiService.getTrainText())));
+        generationConfig = new HashMap<>();
+        generationConfig.put("temperature", 0.5);
+        generationConfig.put("topK", 40);
+        generationConfig.put("topP", 0.95);
+        generationConfig.put("maxOutputTokens", 8192);
+        generationConfig.put("responseMimeType", "text/plain");
+        historyChat.put("systemInstruction", systemInstruction);
+        historyChat.put("generationConfig", generationConfig);
         contents = new ArrayList<>();
 
         return view;
