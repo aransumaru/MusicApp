@@ -4,6 +4,7 @@ import android.app.Application;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.core.app.NotificationManagerCompat;
 
@@ -22,12 +23,16 @@ public class MyApplication extends Application {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
                     "MUnique channel",
-                    NotificationManager.IMPORTANCE_DEFAULT
+                    NotificationManager.IMPORTANCE_NONE
             );
+            channel.setSound(null, null);
+            channel.enableVibration(false);
+
             NotificationManager manager = getSystemService(NotificationManager.class);
             if (manager != null) {
                 manager.createNotificationChannel(channel);
             }
+            Log.d("MyApplication", "Notification channel created");
         }
     }
 
