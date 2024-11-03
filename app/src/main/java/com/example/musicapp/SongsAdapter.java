@@ -62,7 +62,7 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
                 Song currentSong = mainActivity.getCurrentSong();
 
                 if (currentSong == null || !currentSong.getPath().equals(song.getPath())) {
-                    mainActivity.onBtnPlayClick(null);
+                    mainActivity.stopCurrentMusic();
                     mainActivity.updateUIWithSong(song);
                     //update current song index
                     mainActivity.setCurrentSongIndex(position);

@@ -204,6 +204,18 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         }
     }
 
+    void stopMusic() {
+        if (mediaPlayer != null) {
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.stop();
+                mediaPlayer.release();
+                mediaPlayer = null;
+                Log.d("MusicPlayer", "Music stopped.");
+                btnPlay.setBackgroundResource(R.drawable.ic_button_play);
+            }
+        }
+    }
+
     // Phương thức xử lý nút Play
     public void onBtnPlayClick(View view) {
         if (mediaPlayer != null) {
