@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     ConstraintLayout mainLayout;
     ProgressBar progressBar;
     private boolean isLooping = false;
+    private boolean isRandomOn = false;
     //tạo state list song và lưu danh sách từ fragment vào state
     private List<Song> songList = new ArrayList<>();
     private int currentSongIndex = -1;
@@ -112,12 +113,16 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         btnRandom.setOnClickListener(this::onBtnRandom);
     }
 
+    private int getRandomIndex(int min, int max) {
+        return (int) (Math.random() * (max - min + 1)) + min;
+    }
     private void onBtnRandom(View view) {
-        // nếu bật random thì
-        // btnLoop.setBackgroundResource(R.drawable.ic_button_random_enabled);
-        // nếu tắt random thì
-        // btnLoop.setBackgroundResource(R.drawable.ic_button_random);
-
+        if (isRandomOn) { //random off
+            btnLoop.setBackgroundResource(R.drawable.ic_button_random);
+        } else { //random on
+            btnLoop.setBackgroundResource(R.drawable.ic_button_random_enabled);
+        }
+        isRandomOn = !isRandomOn;
     }
 
     private void onBtnLoop(View view) {
@@ -249,6 +254,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         editor.putString("currentSongTitle", title);
         editor.putString("currentSongArtist", artist);
         editor.putInt("currentSongProgress", musicPlayer.getCurrentPosition());
+        editor.putInt("currSongIndex", currentSongIndex);
         editor.putString("currentSongPath", currentSong.getPath()); // Lưu đường dẫn bài hát
         editor.apply();
 
@@ -531,6 +537,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         String title = prefs.getString("currentSongTitle", null);
         String artist = prefs.getString("currentSongArtist", null);
         int progress = prefs.getInt("currentSongProgress", 0);
+        currentSongIndex = prefs.getInt("currSongIndex", 0);
         String path = prefs.getString("currentSongPath", null); // Lấy đường dẫn bài hát
 
         if (title != null && path != null) {
