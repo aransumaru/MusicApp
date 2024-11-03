@@ -75,6 +75,8 @@ public class ListMusicFragment extends Fragment {
     }
 
     private void fetchDataToRecyclerView(String title) {
+        MainActivity mainActivity = (MainActivity) getActivity();
+        mainActivity.SetIsLoading(true);
         SongsAdapter adapter = new SongsAdapter(new ArrayList<>());
         rcv.setLayoutManager(new LinearLayoutManager(getActivity()));
         rcv.setAdapter(adapter);
@@ -86,6 +88,7 @@ public class ListMusicFragment extends Fragment {
                     adapter.data.clear();
                     adapter.data.addAll(songs);
                     adapter.notifyDataSetChanged();
+                    mainActivity.SetIsLoading(false);
                 });
             });
         } else {
@@ -95,6 +98,7 @@ public class ListMusicFragment extends Fragment {
                     adapter.data.clear();
                     adapter.data.addAll(songs);
                     adapter.notifyDataSetChanged();
+                    mainActivity.SetIsLoading(false);
                 });
             });
         }
