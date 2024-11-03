@@ -1,4 +1,4 @@
-package com.example.musicapp;
+package com.example.musicapp.Models;
 
 public class ChatMessage {
     private String message;

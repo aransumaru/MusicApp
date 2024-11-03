@@ -1,8 +1,6 @@
 package com.example.musicapp;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -10,7 +8,6 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
@@ -18,27 +15,26 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.Manifest;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.graphics.Insets;
-import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
+import com.example.musicapp.Models.Song;
+import com.example.musicapp.NotificationService.MediaControlReceiver;
+import com.example.musicapp.NotificationService.MediaNotificationHelper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -64,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     private int currentSongIndex = -1;
     private MediaNotificationHelper notificationHelper;
     private MediaSessionCompat mediaSession;
+    SharedPreferences prefs;
 
     public void setCurrentSongIndex(int index) {
         currentSongIndex = index;
@@ -191,10 +188,10 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
             try {
                 mediaPlayer.setDataSource(path);
                 mediaPlayer.prepare();
-                mediaPlayer.start();
                 mediaPlayer.setLooping(isLooping);
                 notificationHelper.showMediaNotification(tvTitle.getText().toString(), tvArtist.getText().toString());
-                btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
+//                mediaPlayer.start();
+//                btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
                 String duration = millisecondsToString(mediaPlayer.getDuration());
                 tvDuration.setText(duration);
                 mediaPlayer.setOnCompletionListener(mp -> onBtnNextSongClick(null));
@@ -387,9 +384,12 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         bindingView();
         bindingAction();
         startSeekBarUpdateThread();
+        restoreLastSong();
+        FetchSongList();
+    }
 
-        // Khôi phục trạng thái bài hát
-        SharedPreferences prefs = getSharedPreferences("MusicApp", MODE_PRIVATE);
+    void restoreLastSong() {
+        prefs = getSharedPreferences("MusicApp", MODE_PRIVATE);
         String title = prefs.getString("currentSongTitle", null);
         String artist = prefs.getString("currentSongArtist", null);
         int progress = prefs.getInt("currentSongProgress", 0);
@@ -401,9 +401,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
             Song song = new Song(title, artist, path);
             updateUIWithSong(song);
             mediaPlayer.seekTo(progress); // Khôi phục vị trí
-            mediaPlayer.start(); // Bắt đầu phát từ vị trí đã lưu
         }
-        FetchSongList();
     }
 
     @Override
@@ -429,12 +427,13 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         super.onPause();
     }
 
+    @SuppressLint("CommitPrefEdits")
     @Override
     protected void onDestroy() {
         super.onDestroy();
         // Hủy thông báo nếu ứng dụng bị đóng
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        notificationManager.cancel(1); // Hủy thông báo có ID 1
+//        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+//        notificationManager.cancel(1); // Hủy thông báo có ID 1
         if (mediaPlayer != null) {
             mediaPlayer.stop();
             mediaPlayer.release();
