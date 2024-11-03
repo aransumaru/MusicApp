@@ -63,11 +63,11 @@ public class SongService {
                     Map<String, String> dataMap = (Map<String, String>) jsonMap.get("data");
                     String url128 = dataMap.get("128");
                     currSong.setPath(url128);
+                    listSong.add(currSong);
                 });
                 futures.add(songFuture);
-                listSong.add(currSong);
             }
-            CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+            CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
             allOf.thenRun(() -> future.complete(listSong));
         });
         return future;
@@ -83,7 +83,6 @@ public class SongService {
                 JSONObject data = jsonObject.getJSONObject("data");
                 JSONArray songsArray = data.getJSONArray("songs");
                 List<Song> songsList = new ArrayList<>();
-
                 for (int i = 0; i < songsArray.length(); i++) {
                     JSONObject songObject = songsArray.getJSONObject(i);
                     Song songData = new Song();
@@ -99,16 +98,22 @@ public class SongService {
                         Gson gson = new Gson();
                         Type mapType = new TypeToken<Map<String, Object>>() {}.getType();
                         Map<String, Object> jsonMap = gson.fromJson(urlData, mapType);
+
                         Map<String, String> dataMap = (Map<String, String>) jsonMap.get("data");
-                        String url128 = dataMap.get("128");
-                        s.setPath(url128);
+                        String error = jsonMap.get("err").toString();
+                        if ((error).equals("0.0")) {
+                            String url128 = dataMap.get("128");
+                            Log.d("SONGSERVICEEEEEEEEEEEEEEE", "Song ADDED: " + url128);
+                            s.setPath(url128);
+                            finalData.add(s);
+                        }
                     });
                     futures.add(songFuture);
-                    finalData.add(s);
                 }
-                CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-                allOf.thenRun(() -> future.complete(finalData));
-
+                CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
+                allOf.thenRun(() -> {
+                    future.complete(finalData);
+                });
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -13,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -74,7 +76,9 @@ public class ListMusicFragment extends Fragment {
         });
     }
 
-    private void fetchDataToRecyclerView(String title) {
+    public void fetchDataToRecyclerView(String title) {
+        MainActivity mainActivity = (MainActivity) getActivity();
+        mainActivity.SetIsLoading(true);
         SongsAdapter adapter = new SongsAdapter(new ArrayList<>());
         rcv.setLayoutManager(new LinearLayoutManager(getActivity()));
         rcv.setAdapter(adapter);
@@ -86,6 +90,8 @@ public class ListMusicFragment extends Fragment {
                     adapter.data.clear();
                     adapter.data.addAll(songs);
                     adapter.notifyDataSetChanged();
+
+                    mainActivity.SetIsLoading(false);
                 });
             });
         } else {
@@ -95,6 +101,8 @@ public class ListMusicFragment extends Fragment {
                     adapter.data.clear();
                     adapter.data.addAll(songs);
                     adapter.notifyDataSetChanged();
+
+                    mainActivity.SetIsLoading(false);
                 });
             });
         }
