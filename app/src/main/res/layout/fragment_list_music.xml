@@ -10,38 +10,29 @@
     android:background="@drawable/background">
 
 
-    <LinearLayout
-        android:id="@+id/layout1"
-        android:layout_width="343dp"
-        android:layout_height="49dp"
-        android:layout_marginTop="12dp"
+    <SearchView
+        android:id="@+id/btnSearch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#464281"
+        android:backgroundTint="#14FFFFFF"
+        android:iconifiedByDefault="false"
+        android:queryBackground="@android:color/transparent"
+        android:queryHint="Tìm kiếm"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.491"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <SearchView
-            android:id="@+id/btnSearch"
-            android:queryBackground="@android:color/transparent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:iconifiedByDefault="false"
-            android:queryHint="Tìm kiếm"
-            android:background="#464281"
-            android:backgroundTint="#14FFFFFF" />
-
-    </LinearLayout>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rcv"
-        android:layout_width="324dp"
-        android:layout_height="389dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.672"
+        android:layout_width="319dp"
+        android:layout_height="436dp"
 
+        android:layout_marginTop="64dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/layout1"
-        app:layout_constraintVertical_bias="0.895" />
+        app:layout_constraintTop_toBottomOf="@+id/btnSearch" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
