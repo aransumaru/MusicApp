@@ -3,39 +3,36 @@ package com.example.musicapp;
 
 import android.util.Log;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import okhttp3.*;
 
 
 public class AiService {
-    private final String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=AIzaSyD6xhKtuyqoqhpL7PBcXvJNt2Xyh5cuX3U";
+    private final String url = "https://generativelanguage.googleapis.com/v1beta/tunedModels/huma-65lzdeofoycs:generateContent?key=AIzaSyD6xhKtuyqoqhpL7PBcXvJNt2Xyh5cuX3U";
 
-    public CompletableFuture<String> Response(String msg) {
+    public CompletableFuture<String> Response(String msg, Map<String, Object> historyChat) {
         CompletableFuture<String> future = new CompletableFuture();
         OkHttpClient client = new OkHttpClient();
-        JsonObject contents = new JsonObject();
-        JsonObject part = new JsonObject();
-        JsonObject text = new JsonObject();
-        text.addProperty("text", msg);
-        part.add("parts", text);
-        contents.add("contents", part);
-
+        Gson gson = new Gson();
+        String jsonString = gson.toJson(historyChat);
+        Log.d("AIIIIIIIIIIIIIIIIIIIIIIIIIIIII", jsonString);
 
         // Tạo RequestBody
         RequestBody body = RequestBody.create(
                 MediaType.parse("application/json; charset=utf-8"),
-                contents.toString()
+                jsonString
                 );
-
         // Tạo request
         Request request = new Request.Builder()
-                .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=AIzaSyD6xhKtuyqoqhpL7PBcXvJNt2Xyh5cuX3U")
+                .url(url)
                 .post(body)
                 .build();
 
