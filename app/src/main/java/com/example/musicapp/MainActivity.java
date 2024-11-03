@@ -100,14 +100,20 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     }
 
     private void onBtnRandom(View view) {
+        // nếu bật random thì
+        // btnLoop.setBackgroundResource(R.drawable.ic_button_random_enabled);
+        // nếu tắt random thì
+        // btnLoop.setBackgroundResource(R.drawable.ic_button_random);
 
     }
 
     private void onBtnLoop(View view) {
         if(!musicPlayer.isLooping()){
             musicPlayer.setLooping(true);
+            btnLoop.setBackgroundResource(R.drawable.ic_button_loop_enabled);
         }else{
             musicPlayer.setLooping(false);
+            btnLoop.setBackgroundResource(R.drawable.ic_button_loop);
         }
     }
 
