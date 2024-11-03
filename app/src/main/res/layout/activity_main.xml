@@ -184,22 +184,6 @@
 
     </RelativeLayout>
 
-    <ImageView
-        android:id="@+id/chat_bubble"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="32dp"
-        android:background="@drawable/rounded_bubble_background"
-        android:contentDescription="Chat Bubble"
-        android:elevation="8dp"
-        android:padding="10dp"
-        android:src="@drawable/ic_chat_bubble"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/relativeLayout3" />
-
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_container"
 
