@@ -230,6 +230,13 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
                 notificationHelper.showMediaNotification(tvTitle.getText().toString(), tvArtist.getText().toString());
                 btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
             }
+        } else {
+            Log.d("MusicPlayer", "MediaPlayer is null.");
+            if (currentSong.getPath() == null) {
+                onBtnListMusicClick();
+            } else {
+                setupMediaPlayer(currentSong.getPath());
+            }
         }
     }
   
@@ -411,9 +418,11 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         if (title != null && path != null) {
             // Tạo đối tượng Song từ dữ liệu đã lưu
             Song song = new Song(title, artist, path);
-            updateUIWithSong(song);
+//            updateUIWithSong(song);
+            tvTitle.setText(song.getTitle());
+            tvArtist.setText(song.getArtist());
             currentSong = song;
-            mediaPlayer.seekTo(progress); // Khôi phục vị trí
+//            mediaPlayer.seekTo(progress); // Khôi phục vị trí
         }
     }
 
