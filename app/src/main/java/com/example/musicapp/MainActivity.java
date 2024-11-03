@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     MediaPlayer musicPlayer;
     private Song currentSong;
     ConstraintLayout mainLayout;
-
+    private boolean isLooping = false;
     //tạo state list song và lưu danh sách từ fragment vào state
     private List<Song> songList = new ArrayList<>();
     private int currentSongIndex = -1;
@@ -108,10 +108,11 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     }
 
     private void onBtnLoop(View view) {
-        if(!musicPlayer.isLooping()){
+        isLooping = !isLooping;
+        if (isLooping) {
             musicPlayer.setLooping(true);
             btnLoop.setBackgroundResource(R.drawable.ic_button_loop_enabled);
-        }else{
+        } else {
             musicPlayer.setLooping(false);
             btnLoop.setBackgroundResource(R.drawable.ic_button_loop);
         }
@@ -166,6 +167,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
                 musicPlayer.setDataSource(path);
                 musicPlayer.prepare();
                 musicPlayer.start();
+                musicPlayer.setLooping(isLooping);
                 sendNotification(tvTitle.getText().toString(), tvArtist.getText().toString(), "Playing");
                 btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
                 String duration = millisecondsToString(musicPlayer.getDuration());
