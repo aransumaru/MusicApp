@@ -24,7 +24,6 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -200,6 +199,18 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
             } catch (IOException e) {
                 e.printStackTrace();
                 Toast.makeText(this, "Unable to set data source: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    void stopCurrentMusic() {
+        if (mediaPlayer != null) {
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.stop();
+                mediaPlayer.release();
+                mediaPlayer = null;
+                Log.d("MusicPlayer", "Music stopped.");
+                btnPlay.setBackgroundResource(R.drawable.ic_button_play);
             }
         }
     }
