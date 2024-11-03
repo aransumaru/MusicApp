@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     MediaPlayer musicPlayer;
     private Song currentSong;
     ConstraintLayout mainLayout;
-
     private boolean isLooping = false;
     //tạo state list song và lưu danh sách từ fragment vào state
     private List<Song> songList = new ArrayList<>();
