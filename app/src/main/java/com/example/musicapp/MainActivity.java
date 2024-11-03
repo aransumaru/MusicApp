@@ -506,16 +506,15 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     @Override
     protected void onResume() {
         super.onResume();
-        if (musicPlayer != null && !musicPlayer.isPlaying()) {
-            musicPlayer.start(); // Bắt đầu lại nếu nhạc đã dừng
-        }
+//        if (musicPlayer != null && !musicPlayer.isPlaying()) {
+//            musicPlayer.start(); // Bắt đầu lại nếu nhạc đã dừng
+//        }
         startSeekBarUpdateThread();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-
     }
 
     @Override
