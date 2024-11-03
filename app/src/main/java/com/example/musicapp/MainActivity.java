@@ -80,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         btnPlay = findViewById(R.id.btnPlay);
         btnDownVolume = findViewById(R.id.btnDownVolume);
         btnUpVolume = findViewById(R.id.btnUpVolume);
-        chatBubble = findViewById(R.id.chat_bubble);
         mainLayout = findViewById(R.id.main);
         btnNextSong = findViewById(R.id.btnNextSong);
         btnPrevSong = findViewById(R.id.btnPrevSong);
@@ -91,7 +90,6 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         btnPlay.setOnClickListener(this::onBtnPlayClick);
         btnDownVolume.setOnClickListener(this::onBtnVolumeDownClick);
         btnUpVolume.setOnClickListener(this::onBtnVolumeUpClick);
-        chatBubble.setOnClickListener(this::onBtnChatBubbleClick);
         mainLayout.setOnClickListener(this::onConstraintLayoutMainClick);
         btnNextSong.setOnClickListener(this::onBtnNextSongClick);
         btnPrevSong.setOnClickListener(this::onBtnPrevSongClick);
@@ -330,7 +328,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         }
     }
 
-    private void onBtnChatBubbleClick(View view) {
+    private void onBtnChatBubbleClick() {
         FragmentManager fragmentManager = getSupportFragmentManager();
         Fragment chatFragment = fragmentManager.findFragmentByTag(CHAT_FRAGMENT_TAG);
         Fragment listMusicFragment = fragmentManager.findFragmentByTag(LIST_MUSIC_FRAGMENT_TAG);
@@ -534,8 +532,13 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.option_menu, menu);
         MenuItem searchItem = menu.findItem(R.id.opt_search);
+        MenuItem chatItem = menu.findItem(R.id.opt_chat);
         searchItem.setOnMenuItemClickListener(item -> {
             onBtnListMusicClick();
+            return true;
+        });
+        chatItem.setOnMenuItemClickListener(item -> {
+            onBtnChatBubbleClick();
             return true;
         });
 
