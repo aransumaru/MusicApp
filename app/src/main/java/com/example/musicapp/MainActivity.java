@@ -51,13 +51,14 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
 
     TextView tvTime, tvDuration, tvTitle, tvArtist;
     SeekBar seekBarTime, seekBarVolume;
-    Button btnPlay, btnDownVolume, btnUpVolume, btnNextSong, btnPrevSong;
+    Button btnPlay, btnDownVolume, btnUpVolume, btnNextSong, btnPrevSong, btnLoop, btnRandom;
     private ImageView chatBubble;
     MediaPlayer musicPlayer;
     private Song currentSong;
     ConstraintLayout mainLayout;
     ProgressBar progressBar;
 
+    private boolean isLooping = false;
     //tạo state list song và lưu danh sách từ fragment vào state
     private List<Song> songList = new ArrayList<>();
     private int currentSongIndex = -1;
@@ -92,11 +93,12 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         btnPlay = findViewById(R.id.btnPlay);
         btnDownVolume = findViewById(R.id.btnDownVolume);
         btnUpVolume = findViewById(R.id.btnUpVolume);
-        chatBubble = findViewById(R.id.chat_bubble);
         mainLayout = findViewById(R.id.main);
         btnNextSong = findViewById(R.id.btnNextSong);
         btnPrevSong = findViewById(R.id.btnPrevSong);
         progressBar = findViewById(R.id.progressBar);
+        btnLoop = findViewById(R.id.btnLoop);
+        btnRandom= findViewById(R.id.btnRandom);
     }
 
     // Phương thức bindingAction
@@ -104,10 +106,30 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         btnPlay.setOnClickListener(this::onBtnPlayClick);
         btnDownVolume.setOnClickListener(this::onBtnVolumeDownClick);
         btnUpVolume.setOnClickListener(this::onBtnVolumeUpClick);
-        chatBubble.setOnClickListener(this::onBtnChatBubbleClick);
         mainLayout.setOnClickListener(this::onConstraintLayoutMainClick);
         btnNextSong.setOnClickListener(this::onBtnNextSongClick);
         btnPrevSong.setOnClickListener(this::onBtnPrevSongClick);
+        btnLoop.setOnClickListener(this::onBtnLoop);
+        btnRandom.setOnClickListener(this::onBtnRandom);
+    }
+
+    private void onBtnRandom(View view) {
+        // nếu bật random thì
+        // btnLoop.setBackgroundResource(R.drawable.ic_button_random_enabled);
+        // nếu tắt random thì
+        // btnLoop.setBackgroundResource(R.drawable.ic_button_random);
+
+    }
+
+    private void onBtnLoop(View view) {
+        isLooping = !isLooping;
+        if (isLooping) {
+            musicPlayer.setLooping(true);
+            btnLoop.setBackgroundResource(R.drawable.ic_button_loop_enabled);
+        } else {
+            musicPlayer.setLooping(false);
+            btnLoop.setBackgroundResource(R.drawable.ic_button_loop);
+        }
     }
 
     private void onBtnPrevSongClick(View view) {
@@ -158,13 +180,13 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
             try {
                 musicPlayer.setDataSource(path);
                 musicPlayer.prepare();
-                musicPlayer.setLooping(true);
                 musicPlayer.start();
+                musicPlayer.setLooping(isLooping);
                 sendNotification(tvTitle.getText().toString(), tvArtist.getText().toString(), "Playing");
                 btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
                 String duration = millisecondsToString(musicPlayer.getDuration());
                 tvDuration.setText(duration);
-
+                musicPlayer.setOnCompletionListener(mp -> onBtnNextSongClick(null));
 
                 setupSeekBar();
                 startSeekBarUpdateThread();
@@ -359,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         }
     }
 
-    private void onBtnChatBubbleClick(View view) {
+    private void onBtnChatBubbleClick() {
         FragmentManager fragmentManager = getSupportFragmentManager();
         Fragment chatFragment = fragmentManager.findFragmentByTag(CHAT_FRAGMENT_TAG);
         Fragment listMusicFragment = fragmentManager.findFragmentByTag(LIST_MUSIC_FRAGMENT_TAG);
@@ -536,16 +558,15 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     @Override
     protected void onResume() {
         super.onResume();
-        if (musicPlayer != null && !musicPlayer.isPlaying()) {
-            musicPlayer.start(); // Bắt đầu lại nếu nhạc đã dừng
-        }
+//        if (musicPlayer != null && !musicPlayer.isPlaying()) {
+//            musicPlayer.start(); // Bắt đầu lại nếu nhạc đã dừng
+//        }
         startSeekBarUpdateThread();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-
     }
 
     @Override
@@ -565,8 +586,13 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.option_menu, menu);
         MenuItem searchItem = menu.findItem(R.id.opt_search);
+        MenuItem chatItem = menu.findItem(R.id.opt_chat);
         searchItem.setOnMenuItemClickListener(item -> {
             onBtnListMusicClick();
+            return true;
+        });
+        chatItem.setOnMenuItemClickListener(item -> {
+            onBtnChatBubbleClick();
             return true;
         });
 

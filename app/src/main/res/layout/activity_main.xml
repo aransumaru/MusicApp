@@ -123,8 +123,30 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.28"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/relativeDuration"/>
+
+
+    <Button
+        android:id="@+id/btnLoop"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="80dp"
+        android:background="@drawable/ic_button_loop"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.365"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/relativeDuration" />
 
+    <Button
+        android:id="@+id/btnRandom"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="80dp"
+        android:background="@drawable/ic_button_random"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.631"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/relativeDuration" />
 
     <RelativeLayout
         android:id="@+id/relativeLayout3"
@@ -158,8 +180,8 @@
             android:id="@+id/btnUpVolume"
             android:layout_width="59dp"
             android:layout_height="match_parent"
-            android:layout_alignParentEnd="true"
             android:layout_marginEnd="10dp"
+            android:layout_alignParentEnd="true"
             android:background="@drawable/ic_volume_up" />
 
 
