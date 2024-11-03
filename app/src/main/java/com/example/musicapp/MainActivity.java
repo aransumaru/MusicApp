@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -55,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     MediaPlayer musicPlayer;
     private Song currentSong;
     ConstraintLayout mainLayout;
+    ProgressBar progressBar;
     private boolean isLooping = false;
     //tạo state list song và lưu danh sách từ fragment vào state
     private List<Song> songList = new ArrayList<>();
@@ -68,6 +70,16 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         songList.addAll(songs);
     }
 
+    public void SetIsLoading(Boolean isLoading) {
+        if (isLoading) {
+            progressBar.setVisibility(View.VISIBLE);
+            findViewById(R.id.overlay).setVisibility(View.VISIBLE);
+        } else {
+            progressBar.setVisibility(View.GONE);
+            findViewById(R.id.overlay).setVisibility(View.GONE);
+        }
+
+    }
 
     // Phương thức bindingView
     private void bindingView() {
@@ -85,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         btnPrevSong = findViewById(R.id.btnPrevSong);
         btnLoop = findViewById(R.id.btnLoop);
         btnRandom= findViewById(R.id.btnRandom);
+        progressBar = findViewById(R.id.progressBar);
     }
 
     // Phương thức bindingAction
@@ -303,6 +316,23 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
             seekBarVolume.setProgress(0);
         }
     }
+    private void FetchSongList() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        ListMusicFragment listMusicFragment = (ListMusicFragment) fragmentManager.findFragmentByTag(LIST_MUSIC_FRAGMENT_TAG);
+        if (listMusicFragment == null) {
+            listMusicFragment = new ListMusicFragment();
+            fragmentManager.beginTransaction()
+                    .setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_left)
+                    .add(R.id.fragment_container, listMusicFragment, LIST_MUSIC_FRAGMENT_TAG)
+                    .hide(listMusicFragment)
+                    .commit();
+        } else if (!listMusicFragment.isVisible()) {
+            fragmentManager.beginTransaction()
+                    .setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_left)
+                    .hide(listMusicFragment)
+                    .commit();
+        }
+    }
 
     // Phương thức xử lý nút Main
     private void onConstraintLayoutMainClick(View view) {
@@ -510,6 +540,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
             musicPlayer.seekTo(progress); // Khôi phục vị trí
             musicPlayer.start(); // Bắt đầu phát từ vị trí đã lưu
         }
+        FetchSongList();
     }
 
     @Override
