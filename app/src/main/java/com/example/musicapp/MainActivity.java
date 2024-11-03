@@ -141,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         if (currentSongIndex == 0) return;
         currentSongIndex--;
         Song song = songList.get(currentSongIndex);
+//        stopCurrentMusic();
         updateUIWithSong(song);
     }
 
@@ -149,6 +150,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         if (currentSongIndex == songList.size() - 1) return;
         currentSongIndex++;
         Song song = songList.get(currentSongIndex);
+//        stopCurrentMusic();
         updateUIWithSong(song);
     }
 
@@ -166,7 +168,6 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
             }
 
             currentSong = song;
-
             tvTitle.setText(song.getTitle());
             tvArtist.setText(song.getArtist());
             setupMediaPlayer(song.getPath());
@@ -178,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     // Phương thức thiết lập MediaPlayer
     private void setupMediaPlayer(String path) {
         if (mediaPlayer != null) {
-            stopCurrentMusic();; // Hết nhạc nếu đang phát
+            onBtnPlayClick(null); // Dừng nhạc nếu đang phát
         }
         mediaPlayer = new MediaPlayer();
         mediaSession = new MediaSessionCompat(this, "MediaSessionTag");
@@ -189,8 +190,8 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
                 mediaPlayer.prepare();
                 mediaPlayer.setLooping(isLooping);
                 notificationHelper.showMediaNotification(tvTitle.getText().toString(), tvArtist.getText().toString());
-//                mediaPlayer.start();
-//                btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
+                mediaPlayer.start();
+                btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
                 String duration = millisecondsToString(mediaPlayer.getDuration());
                 tvDuration.setText(duration);
                 mediaPlayer.setOnCompletionListener(mp -> onBtnNextSongClick(null));
@@ -411,6 +412,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
             // Tạo đối tượng Song từ dữ liệu đã lưu
             Song song = new Song(title, artist, path);
             updateUIWithSong(song);
+            currentSong = song;
             mediaPlayer.seekTo(progress); // Khôi phục vị trí
         }
     }
