@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
 
     TextView tvTime, tvDuration, tvTitle, tvArtist;
     SeekBar seekBarTime, seekBarVolume;
-    Button btnPlay, btnDownVolume, btnUpVolume, btnNextSong, btnPrevSong;
+    Button btnPlay, btnDownVolume, btnUpVolume, btnNextSong, btnPrevSong, btnLoop, btnRandom;
     private ImageView chatBubble;
     MediaPlayer musicPlayer;
     private Song currentSong;
@@ -84,6 +84,8 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         mainLayout = findViewById(R.id.main);
         btnNextSong = findViewById(R.id.btnNextSong);
         btnPrevSong = findViewById(R.id.btnPrevSong);
+        btnLoop = findViewById(R.id.btnLoop);
+        btnRandom= findViewById(R.id.btnRandom);
     }
 
     // Phương thức bindingAction
@@ -95,6 +97,20 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         mainLayout.setOnClickListener(this::onConstraintLayoutMainClick);
         btnNextSong.setOnClickListener(this::onBtnNextSongClick);
         btnPrevSong.setOnClickListener(this::onBtnPrevSongClick);
+        btnLoop.setOnClickListener(this::onBtnLoop);
+        btnRandom.setOnClickListener(this::onBtnRandom);
+    }
+
+    private void onBtnRandom(View view) {
+
+    }
+
+    private void onBtnLoop(View view) {
+        if(!musicPlayer.isLooping()){
+            musicPlayer.setLooping(true);
+        }else{
+            musicPlayer.setLooping(false);
+        }
     }
 
     private void onBtnPrevSongClick(View view) {
@@ -145,7 +161,6 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
             try {
                 musicPlayer.setDataSource(path);
                 musicPlayer.prepare();
-                musicPlayer.setLooping(true);
                 musicPlayer.start();
                 sendNotification(tvTitle.getText().toString(), tvArtist.getText().toString(), "Playing");
                 btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
