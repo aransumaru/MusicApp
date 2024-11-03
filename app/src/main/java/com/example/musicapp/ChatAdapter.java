@@ -1,5 +1,4 @@
 package com.example.musicapp;// ChatAdapter.java
-import android.annotation.SuppressLint;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +8,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.musicapp.Models.ChatMessage;
+
 import java.util.ArrayList;
 import java.util.List;
 
