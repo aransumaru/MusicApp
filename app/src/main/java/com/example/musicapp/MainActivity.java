@@ -178,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     // Phương thức thiết lập MediaPlayer
     private void setupMediaPlayer(String path) {
         if (mediaPlayer != null) {
-            onBtnPlayClick(null); // Dừng nhạc nếu đang phát
+            stopCurrentMusic();; // Hết nhạc nếu đang phát
         }
         mediaPlayer = new MediaPlayer();
         mediaSession = new MediaSessionCompat(this, "MediaSessionTag");
