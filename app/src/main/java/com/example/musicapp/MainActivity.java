@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
                 btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
                 String duration = millisecondsToString(musicPlayer.getDuration());
                 tvDuration.setText(duration);
-
+                musicPlayer.setOnCompletionListener(mp -> onBtnNextSongClick(null));
 
                 setupSeekBar();
                 startSeekBarUpdateThread();
