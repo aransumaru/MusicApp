@@ -1,5 +1,6 @@
 package com.example.musicapp;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -8,6 +9,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.media.session.MediaSessionCompat;
@@ -25,6 +27,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -314,7 +317,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     }
 
     // Phương thức xử lý nút Main
-    private void onConstraintLayoutMainClick(View view) {
+    public void onConstraintLayoutMainClick(View view) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         Fragment chatFragment = fragmentManager.findFragmentByTag(CHAT_FRAGMENT_TAG);
         Fragment listMusicFragment = fragmentManager.findFragmentByTag(LIST_MUSIC_FRAGMENT_TAG);
@@ -434,6 +437,11 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 100);
+        }
 
         // Register receiver for UI updates
         LocalBroadcastManager.getInstance(this).registerReceiver(uiUpdateReceiver,

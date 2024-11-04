@@ -56,11 +56,13 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
 
 
         private void onItemViewClick(View view) {
+            MainActivity mainActivity = (MainActivity) view.getContext();
+
+            mainActivity.onConstraintLayoutMainClick(null);
             int position = getAdapterPosition();
             if (position != RecyclerView.NO_POSITION) {
                 Song song = data.get(position);
 
-                MainActivity mainActivity = (MainActivity) view.getContext();
                 Song currentSong = mainActivity.getCurrentSong();
 
                 if (currentSong == null || !currentSong.getPath().equals(song.getPath())) {
@@ -84,14 +86,6 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
                     Toast.makeText(mainActivity, message, Toast.LENGTH_SHORT).show();
                 }
 
-                FragmentManager fragmentManager = mainActivity.getSupportFragmentManager();
-                Fragment listMusicFragment = fragmentManager.findFragmentByTag("LIST_MUSIC_FRAGMENT");
-                if (listMusicFragment != null && listMusicFragment.isVisible()) {
-                    fragmentManager.beginTransaction()
-                            .setCustomAnimations(R.anim.slide_out_left, R.anim.slide_out_right)
-                            .hide(listMusicFragment)
-                            .commit();
-                }
             }
         }
 

@@ -1,5 +1,6 @@
 package com.example.musicapp.NotificationService;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -63,7 +64,7 @@ public class MediaNotificationHelper {
         // Show the notification
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            return;
+            ActivityCompat.requestPermissions((Activity) context, new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 100);
         }
         notificationManager.notify(NOTIFICATION_ID, notification.build());
     }
