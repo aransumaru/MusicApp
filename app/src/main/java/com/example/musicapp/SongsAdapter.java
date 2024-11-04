@@ -9,6 +9,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.musicapp.Models.Song;
@@ -80,6 +82,15 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
                 } else {
                     String message = song.getTitle() + " đang được phát.";
                     Toast.makeText(mainActivity, message, Toast.LENGTH_SHORT).show();
+                }
+
+                FragmentManager fragmentManager = mainActivity.getSupportFragmentManager();
+                Fragment listMusicFragment = fragmentManager.findFragmentByTag("LIST_MUSIC_FRAGMENT");
+                if (listMusicFragment != null && listMusicFragment.isVisible()) {
+                    fragmentManager.beginTransaction()
+                            .setCustomAnimations(R.anim.slide_out_left, R.anim.slide_out_right)
+                            .hide(listMusicFragment)
+                            .commit();
                 }
             }
         }
