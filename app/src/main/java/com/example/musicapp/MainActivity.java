@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
             return;
         }
         currentSongIndex++;
-        Song song;
+        Song song = new Song();
         try {
             song = songList.get(currentSongIndex);
         } catch (ArrayIndexOutOfBoundsException ex) {
@@ -272,7 +272,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
             }
         } else {
             Log.d("MusicPlayer", "MediaPlayer is null.");
-            if (currentSong == null) {
+            if (currentSong == null || (currentSong != null && currentSong.getPath() == null)) {
                 onBtnListMusicClick();
             } else {
                 setupMediaPlayer(currentSong.getPath());
