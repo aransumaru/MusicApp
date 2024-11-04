@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
 import android.view.Menu;
@@ -60,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     private MediaNotificationHelper notificationHelper;
     private MediaSessionCompat mediaSession;
     SharedPreferences prefs;
+    private boolean isHandlingClick = false;
 
     @Override
     public void onBackPressed() {
@@ -149,8 +151,12 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     }
 
     private void onBtnPrevSongClick(View view) {
-        if (currentSongIndex == -1) return;
-        if (currentSongIndex == 0) return;
+        if (isHandlingClick) return;
+        isHandlingClick = true;
+        if (currentSongIndex == -1 || currentSongIndex == 0){
+            isHandlingClick = false;
+            return;
+        }
         currentSongIndex--;
         Song song;
         try {
@@ -160,11 +166,16 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         }
 //        stopCurrentMusic();
         updateUIWithSong(song);
+        new Handler().postDelayed(() -> isHandlingClick = false, 1000);
     }
 
     private void onBtnNextSongClick(View view) {
-        if (currentSongIndex == -1) return;
-        if (currentSongIndex == songList.size() - 1) return;
+        if (isHandlingClick) return;
+        isHandlingClick = true;
+        if (currentSongIndex == -1 || currentSongIndex == songList.size() - 1){
+            isHandlingClick = false;
+            return;
+        }
         currentSongIndex++;
         Song song;
         try {
@@ -174,6 +185,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         }
 //        stopCurrentMusic();
         updateUIWithSong(song);
+        new Handler().postDelayed(() -> isHandlingClick = false, 1000);
     }
 
 
@@ -260,7 +272,7 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
             }
         } else {
             Log.d("MusicPlayer", "MediaPlayer is null.");
-            if (currentSong.getPath() == null) {
+            if (currentSong == null) {
                 onBtnListMusicClick();
             } else {
                 setupMediaPlayer(currentSong.getPath());
