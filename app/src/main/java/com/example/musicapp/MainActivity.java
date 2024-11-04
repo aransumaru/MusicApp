@@ -61,6 +61,18 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
     private MediaSessionCompat mediaSession;
     SharedPreferences prefs;
 
+    @Override
+    public void onBackPressed() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment chatFragment = fragmentManager.findFragmentByTag(CHAT_FRAGMENT_TAG);
+        Fragment listMusicFragment = fragmentManager.findFragmentByTag(LIST_MUSIC_FRAGMENT_TAG);
+
+        if ((chatFragment != null && chatFragment.isVisible()) || (listMusicFragment != null && listMusicFragment.isVisible())) {
+            onConstraintLayoutMainClick(null);
+        } else {
+            super.onBackPressed(); // Thoát ứng dụng
+        }
+    }
     public void setCurrentSongIndex(int index) {
         currentSongIndex = index;
     }
@@ -117,12 +129,12 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         return (int) (Math.random() * (max - min + 1)) + min;
     }
     private void onBtnRandom(View view) {
-        if (isRandomOn) { //random off
-            btnLoop.setBackgroundResource(R.drawable.ic_button_random);
-        } else { //random on
-            btnLoop.setBackgroundResource(R.drawable.ic_button_random_enabled);
-        }
         isRandomOn = !isRandomOn;
+        if (isRandomOn) {
+            btnRandom.setBackgroundResource(R.drawable.ic_button_random_enabled);
+        } else {
+            btnRandom.setBackgroundResource(R.drawable.ic_button_random);
+        }
     }
 
     private void onBtnLoop(View view) {
@@ -140,7 +152,12 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         if (currentSongIndex == -1) return;
         if (currentSongIndex == 0) return;
         currentSongIndex--;
-        Song song = songList.get(currentSongIndex);
+        Song song;
+        try {
+            song = songList.get(currentSongIndex);
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            song = songList.get(0);
+        }
 //        stopCurrentMusic();
         updateUIWithSong(song);
     }
@@ -149,7 +166,12 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
         if (currentSongIndex == -1) return;
         if (currentSongIndex == songList.size() - 1) return;
         currentSongIndex++;
-        Song song = songList.get(currentSongIndex);
+        Song song;
+        try {
+            song = songList.get(currentSongIndex);
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            song = songList.get(0);
+        }
 //        stopCurrentMusic();
         updateUIWithSong(song);
     }
@@ -194,7 +216,13 @@ public class MainActivity extends AppCompatActivity implements ListMusicFragment
                 btnPlay.setBackgroundResource(R.drawable.ic_button_pause);
                 String duration = millisecondsToString(mediaPlayer.getDuration());
                 tvDuration.setText(duration);
-                mediaPlayer.setOnCompletionListener(mp -> onBtnNextSongClick(null));
+                mediaPlayer.setOnCompletionListener(mp -> {
+                    if (isRandomOn) {
+                        updateUIWithSong(songList.get(getRandomIndex(0, songList.size())));
+                    } else {
+                        onBtnNextSongClick(null);
+                    }
+                });
                 setupSeekBar();
                 startSeekBarUpdateThread();
             } catch (IOException e) {
