@@ -6,6 +6,7 @@ import com.example.musicapp.Models.Song;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,9 +82,11 @@ public class SongService {
             try {
                 jsonObject = new JSONObject(res);
                 JSONObject data = jsonObject.getJSONObject("data");
+                if (!data.has("songs")) {
+                    throw new Exception();
+                }
                 JSONArray songsArray = data.getJSONArray("songs");
                 List<Song> songsList = new ArrayList<>();
-
                 for (int i = 0; i < songsArray.length(); i++) {
                     JSONObject songObject = songsArray.getJSONObject(i);
                     Song songData = new Song();
@@ -103,7 +106,6 @@ public class SongService {
                         String error = jsonMap.get("err").toString();
                         if ((error).equals("0.0")) {
                             String url128 = dataMap.get("128");
-                            Log.d("SONGSERVICEEEEEEEEEEEEEEE", "Song ADDED: " + url128);
                             s.setPath(url128);
                             finalData.add(s);
                         }
@@ -114,8 +116,8 @@ public class SongService {
                 allOf.thenRun(() -> {
                     future.complete(finalData);
                 });
-
-            } catch (JSONException e) {
+            } catch (Exception e) {
+                future.complete(new ArrayList<Song>());
                 throw new RuntimeException(e);
             }
         });
